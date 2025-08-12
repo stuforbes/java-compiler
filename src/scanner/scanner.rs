@@ -1,9 +1,7 @@
-use std::collections::HashMap;
 use crate::scanner::literal::Literal;
-use crate::scanner::token::TokenType::{
-    Dot, Identifier, LeftBrace, LeftParen, RightBrace, RightParen, SemiColon, String,
-};
 use crate::scanner::token::{Token, TokenType};
+use lazy_static::lazy_static;
+use std::collections::HashMap;
 
 pub fn scan(source: &str) -> Vec<Token> {
     let mut scanner = Scanner::for_source(source);
@@ -11,22 +9,22 @@ pub fn scan(source: &str) -> Vec<Token> {
     scanner.tokens
 }
 
-struct ScannerReference {
-    identifierKeywords: HashMap<&'static str, TokenType>
-}
+lazy_static! {
+    static ref IDENTIFIER_KEYWORDS: HashMap<&'static str, TokenType> = vec![
+        ("class", TokenType::Class),
+        ("public", TokenType::Public),
+        ("static", TokenType::Static),
+        ("void", TokenType::Void),
+    ].into_iter().collect();
 
-impl ScannerReference {
-    fn new() -> Self {
-        let mut identifierKeywords = HashMap::new();
-        identifierKeywords.insert("class", TokenType::Class);
-        identifierKeywords.insert("public", TokenType::Public);
-        identifierKeywords.insert("static", TokenType::Static);
-        identifierKeywords.insert("void", TokenType::Void);
-
-        Self {
-            identifierKeywords
-        }
-    }
+    static ref SINGLE_CHAR_TOKENS: HashMap<char, TokenType> = vec![
+        ('(', TokenType::LeftParen),
+        (')', TokenType::RightParen),
+        ('{', TokenType::LeftBrace),
+        ('}', TokenType::RightBrace),
+        (';', TokenType::SemiColon),
+        ('.', TokenType::Dot),
+    ].into_iter().collect();
 }
 
 struct Scanner<'a> {
@@ -35,7 +33,7 @@ struct Scanner<'a> {
     current_position: usize,
     end: usize,
     line: i32,
-    tokens: Vec<Token<'a>>
+    tokens: Vec<Token<'a>>,
 }
 
 impl<'a> Scanner<'a> {
@@ -46,48 +44,46 @@ impl<'a> Scanner<'a> {
             current_position: 0,
             end: source.len(),
             line: 1,
-            tokens: vec![]
+            tokens: vec![],
         }
     }
     pub fn scan_tokens(&mut self) {
-        let reference = ScannerReference::new();
         while !self.is_finished() {
             self.prepare_token_start();
 
-            self.next_token(&reference);
+            self.next_token();
         }
         self.tokens.push(Token::empty(TokenType::Eof));
     }
 
-    fn next_token(&mut self, reference: &ScannerReference) {
+    fn next_token(&mut self) {
         let next_char = self.next_char();
         if Self::is_newline(next_char) {
             self.line = self.line + 1;
-        } else if Self::is_whitespace(next_char) {
             return;
-        } else if next_char == '(' {
-            self.tokens.push(self.create_token(LeftParen));
-        } else if next_char == ')' {
-            self.tokens.push(self.create_token(RightParen));
+        }
+
+        if Self::is_whitespace(next_char) {
             return;
-        } else if next_char == '{' {
-            self.tokens.push(self.create_token(LeftBrace));
+        }
+
+        if let Some(token_type) = SINGLE_CHAR_TOKENS.get(&next_char) {
+            self.tokens.push(self.create_token(*token_type));
             return;
-        } else if next_char == '}' {
-            self.tokens.push(self.create_token(RightBrace));
-            return;
-        } else if next_char == ';' {
-            self.tokens.push(self.create_token(SemiColon));
-        } else if next_char == '.' {
-            self.tokens.push(self.create_token(Dot));
-        } else if next_char == '"' {
+        }
+
+        if next_char == '"' {
             if let Some(token) = self.string_token() {
                 self.tokens.push(token);
             }
-        } else if Self::is_alpha(next_char) {
-            if let Some(token) = self.identifier_token(reference) {
+            return;
+        }
+
+        if Self::is_alpha(next_char) {
+            if let Some(token) = self.identifier_token() {
                 self.tokens.push(token);
             }
+            return;
         }
 
         // Handle unexpected character
@@ -125,18 +121,18 @@ impl<'a> Scanner<'a> {
         self.next_char();
 
         let string_literal = &self.source[self.token_start + 1..self.current_position - 1];
-        Some(self.create_token_with_literal(String, Literal::String(string_literal)))
+        Some(self.create_token_with_literal(TokenType::String, Literal::String(string_literal)))
     }
 
-    fn identifier_token(&mut self, reference: &ScannerReference) -> Option<Token<'a>> {
+    fn identifier_token(&mut self) -> Option<Token<'a>> {
         while Self::is_alpha_numeric(self.peek()) {
             self.next_char();
         }
 
         let identifier = &self.source[self.token_start..self.current_position];
-        match reference.identifierKeywords.get(identifier) {
+        match IDENTIFIER_KEYWORDS.get(&identifier) {
             Some(identifier) => Some(self.create_token(*identifier)),
-            None => Some(self.create_token(Identifier))
+            None => Some(self.create_token(TokenType::Identifier)),
         }
     }
 
