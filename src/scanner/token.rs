@@ -1,12 +1,11 @@
 use crate::scanner::literal::Literal;
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
 pub enum TokenType {
     // Reserved keywords
     Class,
     Public,
     Static,
-    Void,
 
     // Single character tokens
     LeftParen,
@@ -16,6 +15,7 @@ pub enum TokenType {
     // DoubleQuote,
     SemiColon,
     Dot,
+    Comma,
 
     // Literals
     Identifier,
@@ -54,5 +54,9 @@ impl<'a> Token<'a> {
             lexeme: Some(lexeme),
             literal: Some(literal),
         }
+    }
+
+    pub fn token_type(&self) -> TokenType {
+        self.token_type
     }
 }

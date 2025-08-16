@@ -3,7 +3,7 @@ use crate::scanner::token::{Token, TokenType};
 use lazy_static::lazy_static;
 use std::collections::HashMap;
 
-pub fn scan(source: &str) -> Vec<Token> {
+pub fn scan<'a>(source: &'a str) -> Vec<Token<'a>> {
     let mut scanner = Scanner::for_source(source);
     scanner.scan_tokens();
     scanner.tokens
@@ -14,7 +14,6 @@ lazy_static! {
         ("class", TokenType::Class),
         ("public", TokenType::Public),
         ("static", TokenType::Static),
-        ("void", TokenType::Void),
     ].into_iter().collect();
 
     static ref SINGLE_CHAR_TOKENS: HashMap<char, TokenType> = vec![
@@ -24,6 +23,7 @@ lazy_static! {
         ('}', TokenType::RightBrace),
         (';', TokenType::SemiColon),
         ('.', TokenType::Dot),
+        (',', TokenType::Comma),
     ].into_iter().collect();
 }
 
