@@ -1,5 +1,5 @@
-use java_compiler::test_support::build_class_from_source_file_and_compare;
 use java_compiler::ast::class::{Class, Method, Parameter, Scope};
+use java_compiler::test_support::build_class_from_source_file_and_compare;
 
 #[test]
 fn should_build_simple_ast() {

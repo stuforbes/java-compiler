@@ -3,12 +3,6 @@ use crate::scanner::token::{Token, TokenType};
 use lazy_static::lazy_static;
 use std::collections::HashMap;
 
-pub fn scan<'a>(source: &'a str) -> Vec<Token<'a>> {
-    let mut scanner = Scanner::for_source(source);
-    scanner.scan_tokens();
-    scanner.tokens
-}
-
 lazy_static! {
     static ref IDENTIFIER_KEYWORDS: HashMap<&'static str, TokenType> = vec![
         ("class", TokenType::Class),
@@ -27,7 +21,14 @@ lazy_static! {
     ].into_iter().collect();
 }
 
-struct Scanner<'a> {
+#[allow(clippy::needless_lifetimes)]
+pub fn scan<'a>(source: &'a str) -> Vec<Token<'a>> {
+    let mut scanner = crate::scanner::scanner::Scanner::for_source(source);
+    scanner.scan_tokens();
+    scanner.tokens()
+}
+
+pub struct Scanner<'a> {
     source: &'a str,
     token_start: usize,
     current_position: usize,
@@ -54,6 +55,10 @@ impl<'a> Scanner<'a> {
             self.next_token();
         }
         self.tokens.push(Token::empty(TokenType::Eof));
+    }
+
+    pub fn tokens(self) -> Vec<Token<'a>> {
+        self.tokens
     }
 
     fn next_token(&mut self) {

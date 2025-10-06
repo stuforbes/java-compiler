@@ -28,10 +28,12 @@ impl<'a> ClassBuilder<'a> {
         self.scope = scope
     }
 
+    #[allow(dead_code)]
     pub fn as_static(&mut self) {
         self.is_static = true
     }
 
+    #[allow(dead_code)]
     pub fn as_final(&mut self) {
         self.is_final = true
     }
@@ -69,6 +71,7 @@ impl <'a> Build<Class<'a>> for ClassBuilder<'a> {
 }
 
 #[derive(Clone)]
+#[allow(dead_code)]
 pub struct MethodBuilder<'a> {
     name: Option<&'a str>,
     return_type: Option<&'a str>,

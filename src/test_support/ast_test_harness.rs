@@ -1,4 +1,3 @@
-use std::fmt::Display;
 use crate::ast::class::{Class, Method, Parameter};
 use crate::build;
 use crate::io::read_file;
@@ -9,7 +8,7 @@ pub fn build_class_from_source_file_and_compare<'a>(file_path: &str, expected_cl
     let actual_class = build(source.as_str());
 
     let result = do_comparison(&expected_class, &actual_class, compare_classes);
-    
+
     assert_eq!(ComparisonResult::Match, result, "Not a match: {:}", result)
 }
 

@@ -25,6 +25,7 @@ pub enum TokenType {
 }
 
 #[derive(Debug, Copy, Clone)]
+#[allow(dead_code)]
 pub struct Token<'a> {
     token_type: TokenType,
     lexeme: Option<&'a str>,
