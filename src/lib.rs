@@ -5,7 +5,8 @@ use crate::ast::class::Class;
 mod io;
 mod scanner;
 mod spike;
-mod ast;
+pub mod ast;
+pub mod test_support;
 
 #[allow(clippy::needless_lifetimes)]
 pub fn build<'a>(source: &'a str) -> Class<'a> {

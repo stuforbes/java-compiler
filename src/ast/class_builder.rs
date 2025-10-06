@@ -1,13 +1,5 @@
-use crate::ast::class::{Class, Method, Parameter};
+use crate::ast::class::{Class, Method, Parameter, Scope};
 use crate::ast::class_builder::Scope::Default;
-
-#[derive(Copy, Clone, Debug)]
-pub enum Scope {
-    Public,
-    Protected,
-    Private,
-    Default,
-}
 
 pub trait Build<T> {
     fn build(&self) -> T;

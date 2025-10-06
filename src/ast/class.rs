@@ -1,4 +1,11 @@
-use crate::ast::class_builder::Scope;
+
+#[derive(Copy, Clone, Debug, PartialEq)]
+pub enum Scope {
+    Public,
+    Protected,
+    Private,
+    Default,
+}
 
 #[derive(Debug)]
 pub struct Class<'a> {
@@ -24,6 +31,22 @@ impl <'a> Class<'a> {
             methods
         }
     }
+
+    pub fn name(&self) -> &str {
+        self.name
+    }
+    pub fn scope(&self) -> Scope {
+        self.scope
+    }
+    pub fn is_static(&self) -> bool {
+        self.is_static
+    }
+    pub fn is_final(&self) -> bool {
+        self.is_final
+    }
+    pub fn methods(&self) -> &Vec<Method<'a>> {
+        &self.methods
+    }
 }
 
 #[derive(Debug)]
@@ -47,6 +70,19 @@ impl <'a> Method<'a> {
             statements
         }
     }
+
+    pub fn name(&self) -> &'a str {
+        self.name
+    }
+    pub fn return_type(&self) -> &'a str {
+        self.return_type
+    }
+    pub fn parameters(&self) -> &Vec<Parameter<'a>> {
+        &self.parameters
+    }
+    pub fn statements(&self) -> &Vec<&'a str> {
+        &self.statements
+    }
 }
 
 #[derive(Debug)]
@@ -61,5 +97,12 @@ impl <'a> Parameter<'a> {
             param_name,
             param_type
         }
+    }
+
+    pub fn param_name(&self) -> &'a str {
+        self.param_name
+    }
+    pub fn param_type(&self) -> &'a str {
+        self.param_type
     }
 }

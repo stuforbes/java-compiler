@@ -1,5 +1,5 @@
-use crate::ast::class::Class;
-use crate::ast::class_builder::{Build, ClassBuilder, Scope};
+use crate::ast::class::{Class, Scope};
+use crate::ast::class_builder::{Build, ClassBuilder};
 use crate::ast::state_machine::State::MethodBody;
 use crate::ast::state_machine::{State, StateMachine};
 use crate::scanner::{Token, TokenType};
