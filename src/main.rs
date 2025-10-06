@@ -1,19 +1,17 @@
-use crate::ast::to_ast;
 use crate::io::read_file;
-use crate::scanner::scan;
+use java_compiler::build;
 
+mod ast;
 mod io;
 mod scanner;
 mod spike;
-mod ast;
 
 fn main() {
     let source = read_file("samples/simple.java");
-
-    let tokens = scan(source.as_str());
-    to_ast(tokens);
+    let class = build(source.as_str());
+    println!("{:?}", class);
     // println!("Tokens: {:?}", tokens.len());
-    // 
+    //
     // for token in tokens {
     //     println!("Token: {:?}", token);
     // }

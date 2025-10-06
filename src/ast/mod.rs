@@ -6,7 +6,7 @@ use crate::scanner::{Token, TokenType};
 
 mod state_machine;
 mod class_builder;
-mod class;
+pub mod class;
 
 struct AstParser<'a> {
     position: usize,
