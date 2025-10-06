@@ -59,4 +59,11 @@ impl<'a> Token<'a> {
     pub fn token_type(&self) -> TokenType {
         self.token_type
     }
+
+    pub fn lexeme(&self) -> &'a str {
+        match self.lexeme {
+            Some(l) => l,
+            None => panic!("Unavailable for token {:?}", self.token_type)
+        }
+    }
 }

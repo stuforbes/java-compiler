@@ -6,7 +6,7 @@ use crate::scanner::TokenType;
 #[derive(Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Copy, Clone)]
 pub enum State {
     Initial,
-    ClassQualifier,
+    ClassScope,
     ClassDefinition,
     ClassName,
     ClassBody,
@@ -32,8 +32,8 @@ enum Operation {
 
 lazy_static! {
     static ref STATE_CONTEXTS: HashMap<(State, TokenType), Operation> = vec![
-        ((State::Initial, TokenType::Public), Operation::To(State::ClassQualifier)),
-        ((State::ClassQualifier, TokenType::Class), Operation::To(State::ClassDefinition)),
+        ((State::Initial, TokenType::Public), Operation::To(State::ClassScope)),
+        ((State::ClassScope, TokenType::Class), Operation::To(State::ClassDefinition)),
         ((State::ClassDefinition, TokenType::Identifier), Operation::To(State::ClassName)),
         ((State::ClassName, TokenType::LeftBrace), Operation::To(State::ClassBody)),
         ((State::ClassBody, TokenType::Public), Operation::To(State::MethodQualifier)),
