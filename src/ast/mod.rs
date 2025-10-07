@@ -1,4 +1,4 @@
-use crate::ast::class::{Class, Scope};
+use crate::ast::class::{AstClass, AstScope};
 use crate::ast::class_builder::{Build, ClassBuilder};
 use crate::ast::state_machine::State::MethodBody;
 use crate::ast::state_machine::{State, StateMachine};
@@ -36,7 +36,7 @@ impl <'a> AstParser<'a> {
     }
 }
 
-pub fn to_ast(tokens: Vec<Token>) -> Class {
+pub fn to_ast(tokens: Vec<Token>) -> AstClass {
     let mut parser = AstParser::for_tokens(tokens);
     let mut state_machine = StateMachine::new();
     let mut class_builder = ClassBuilder::new();
@@ -105,9 +105,9 @@ fn parse_body(parser: &mut AstParser) {
     }
 }
 
-fn scope_for(token_type: TokenType) -> Scope {
+fn scope_for(token_type: TokenType) -> AstScope {
     match token_type {
-        TokenType::Public => Scope::Public,
+        TokenType::Public => AstScope::Public,
         _ => panic!("Unknown scope {:?}", token_type)
     }
 }

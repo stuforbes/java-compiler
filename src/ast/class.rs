@@ -1,6 +1,6 @@
 
 #[derive(Copy, Clone, Debug, PartialEq)]
-pub enum Scope {
+pub enum AstScope {
     Public,
     Protected,
     Private,
@@ -8,20 +8,20 @@ pub enum Scope {
 }
 
 #[derive(Debug)]
-pub struct Class<'a> {
+pub struct AstClass<'a> {
     name: &'a str,
-    scope: Scope,
+    scope: AstScope,
     is_static: bool,
     is_final: bool,
-    methods: Vec<Method<'a>>,
+    methods: Vec<AstMethod<'a>>,
 }
 
-impl <'a> Class<'a> {
+impl <'a> AstClass<'a> {
     pub fn new(name: &'a str,
-               scope: Scope,
+               scope: AstScope,
                is_static: bool,
                is_final: bool,
-               methods: Vec<Method<'a>>
+               methods: Vec<AstMethod<'a>>
     ) -> Self {
         Self {
             name,
@@ -35,7 +35,7 @@ impl <'a> Class<'a> {
     pub fn name(&self) -> &str {
         self.name
     }
-    pub fn scope(&self) -> Scope {
+    pub fn scope(&self) -> AstScope {
         self.scope
     }
     pub fn is_static(&self) -> bool {
@@ -44,23 +44,23 @@ impl <'a> Class<'a> {
     pub fn is_final(&self) -> bool {
         self.is_final
     }
-    pub fn methods(&self) -> &Vec<Method<'a>> {
+    pub fn methods(&self) -> &Vec<AstMethod<'a>> {
         &self.methods
     }
 }
 
 #[derive(Debug)]
-pub struct Method<'a> {
+pub struct AstMethod<'a> {
     name: &'a str,
     return_type: &'a str,
-    parameters: Vec<Parameter<'a>>,
+    parameters: Vec<AstParameter<'a>>,
     statements: Vec<&'a str>,
 }
 
-impl <'a> Method<'a> {
+impl <'a> AstMethod<'a> {
     pub fn new(name: &'a str,
                return_type: &'a str,
-               parameters: Vec<Parameter<'a>>,
+               parameters: Vec<AstParameter<'a>>,
                statements: Vec<&'a str>
     ) -> Self {
         Self {
@@ -77,7 +77,7 @@ impl <'a> Method<'a> {
     pub fn return_type(&self) -> &'a str {
         self.return_type
     }
-    pub fn parameters(&self) -> &Vec<Parameter<'a>> {
+    pub fn parameters(&self) -> &Vec<AstParameter<'a>> {
         &self.parameters
     }
     pub fn statements(&self) -> &Vec<&'a str> {
@@ -86,12 +86,12 @@ impl <'a> Method<'a> {
 }
 
 #[derive(Debug)]
-pub struct Parameter<'a> {
+pub struct AstParameter<'a> {
     param_name: &'a str,
     param_type: &'a str,
 }
 
-impl <'a> Parameter<'a> {
+impl <'a> AstParameter<'a> {
     pub fn new(param_name: &'a str, param_type: &'a str) -> Self {
         Self {
             param_name,

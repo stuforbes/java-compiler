@@ -1,5 +1,5 @@
-use crate::ast::class::{Class, Method, Parameter, Scope};
-use crate::ast::class_builder::Scope::Default;
+use crate::ast::class::{AstClass, AstMethod, AstParameter, AstScope};
+use crate::ast::class_builder::AstScope::Default;
 
 pub trait Build<T> {
     fn build(&self) -> T;
@@ -7,7 +7,7 @@ pub trait Build<T> {
 
 pub struct ClassBuilder<'a> {
     name: Option<&'a str>,
-    scope: Scope,
+    scope: AstScope,
     is_static: bool,
     is_final: bool,
     methods: Vec<MethodBuilder<'a>>,
@@ -24,7 +24,7 @@ impl<'a> ClassBuilder<'a> {
         }
     }
 
-    pub fn with_scope(&mut self, scope: Scope) {
+    pub fn with_scope(&mut self, scope: AstScope) {
         self.scope = scope
     }
 
@@ -54,13 +54,13 @@ impl<'a> ClassBuilder<'a> {
     }
 }
 
-impl <'a> Build<Class<'a>> for ClassBuilder<'a> {
-    fn build(&self) -> Class<'a> {
+impl <'a> Build<AstClass<'a>> for ClassBuilder<'a> {
+    fn build(&self) -> AstClass<'a> {
         let Some(name) = self.name else {
             panic!("Name was not set")
         };
 
-        Class::new(
+        AstClass::new(
             name,
             self.scope,
             self.is_static,
@@ -109,8 +109,8 @@ impl<'a> MethodBuilder<'a> {
     }
 }
 
-impl <'a> Build<Method<'a>> for MethodBuilder<'a> {
-    fn build(&self) -> Method<'a> {
+impl <'a> Build<AstMethod<'a>> for MethodBuilder<'a> {
+    fn build(&self) -> AstMethod<'a> {
         let Some(name) = self.name else {
             panic!("Name was not set")
         };
@@ -118,7 +118,7 @@ impl <'a> Build<Method<'a>> for MethodBuilder<'a> {
             panic!("Return type was not set")
         };
 
-        Method::new(
+        AstMethod::new(
             name,
             return_type,
             self.parameters.iter().map(|p|p.build()).collect(),
@@ -150,8 +150,8 @@ impl <'a> ParameterBuilder<'a> {
     }
 }
 
-impl <'a> Build<Parameter<'a>> for ParameterBuilder<'a> {
-    fn build(&self) -> Parameter<'a> {
+impl <'a> Build<AstParameter<'a>> for ParameterBuilder<'a> {
+    fn build(&self) -> AstParameter<'a> {
 
         let Some(param_name) = self.param_name else {
             panic!("Param name was not set")
@@ -161,6 +161,6 @@ impl <'a> Build<Parameter<'a>> for ParameterBuilder<'a> {
             panic!("Param type was not set")
         };
 
-        Parameter::new(param_name, param_type)
+        AstParameter::new(param_name, param_type)
     }
 }
