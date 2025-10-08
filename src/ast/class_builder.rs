@@ -2,7 +2,7 @@ use crate::ast::class::{AstClass, AstMethod, AstParameter, AstScope};
 use crate::ast::class_builder::AstScope::Default;
 
 pub trait Build<T> {
-    fn build(&self) -> T;
+    fn build(self) -> T;
 }
 
 pub struct ClassBuilder<'a> {
@@ -55,17 +55,22 @@ impl<'a> ClassBuilder<'a> {
 }
 
 impl <'a> Build<AstClass<'a>> for ClassBuilder<'a> {
-    fn build(&self) -> AstClass<'a> {
+    fn build(self) -> AstClass<'a> {
         let Some(name) = self.name else {
             panic!("Name was not set")
         };
+
+        let mut ast_methods: Vec<AstMethod> = vec![];
+        for method_builder in self.methods {
+            ast_methods.push(method_builder.build());
+        }
 
         AstClass::new(
             name,
             self.scope,
             self.is_static,
             self.is_final,
-            self.methods.iter().map(|m|m.build()).collect()
+            ast_methods,
         )
     }
 }
@@ -74,6 +79,9 @@ impl <'a> Build<AstClass<'a>> for ClassBuilder<'a> {
 #[allow(dead_code)]
 pub struct MethodBuilder<'a> {
     name: Option<&'a str>,
+    scope: Option<AstScope>,
+    is_static: bool,
+    is_final: bool,
     return_type: Option<&'a str>,
     parameters: Vec<ParameterBuilder<'a>>,
     statements: Vec<&'a str>,
@@ -83,6 +91,9 @@ impl<'a> MethodBuilder<'a> {
     fn new() -> Self {
         Self {
             name: None,
+            scope: None,
+            is_static: false,
+            is_final: false,
             return_type: None,
             parameters: vec![],
             statements: vec![],
@@ -91,6 +102,18 @@ impl<'a> MethodBuilder<'a> {
 
     pub fn with_name(&mut self, name: &'a str) {
         self.name = Some(name)
+    }
+
+    pub fn with_scope(&mut self, scope: AstScope) {
+        self.scope = Some(scope)
+    }
+
+    pub fn as_static(&mut self) {
+        self.is_static = true;
+    }
+
+    pub fn as_final(&mut self) {
+        self.is_final = true;
     }
 
     pub fn with_return_type(&mut self, return_type: &'a str) {
@@ -110,7 +133,7 @@ impl<'a> MethodBuilder<'a> {
 }
 
 impl <'a> Build<AstMethod<'a>> for MethodBuilder<'a> {
-    fn build(&self) -> AstMethod<'a> {
+    fn build(self) -> AstMethod<'a> {
         let Some(name) = self.name else {
             panic!("Name was not set")
         };
@@ -118,10 +141,20 @@ impl <'a> Build<AstMethod<'a>> for MethodBuilder<'a> {
             panic!("Return type was not set")
         };
 
+        let mut ast_parameters: Vec<AstParameter> = vec![];
+        for parameter in self.parameters {
+            ast_parameters.push(parameter.build());
+        }
+
+        let scope = self.scope.unwrap_or(AstScope::Public);
+
         AstMethod::new(
             name,
+            scope,
+            self.is_final,
+            self.is_static,
             return_type,
-            self.parameters.iter().map(|p|p.build()).collect(),
+            ast_parameters,
             vec![]
         )
     }
@@ -131,6 +164,7 @@ impl <'a> Build<AstMethod<'a>> for MethodBuilder<'a> {
 pub struct ParameterBuilder<'a> {
     param_name: Option<&'a str>,
     param_type: Option<&'a str>,
+    is_array: bool,
 }
 
 impl <'a> ParameterBuilder<'a> {
@@ -138,6 +172,7 @@ impl <'a> ParameterBuilder<'a> {
         Self {
             param_name: None,
             param_type: None,
+            is_array: false,
         }
     }
 
@@ -148,10 +183,14 @@ impl <'a> ParameterBuilder<'a> {
     pub fn with_type(&mut self, param_type: &'a str) {
         self.param_type = Some(param_type)
     }
+
+    pub fn as_array(&mut self) {
+        self.is_array = true;
+    }
 }
 
 impl <'a> Build<AstParameter<'a>> for ParameterBuilder<'a> {
-    fn build(&self) -> AstParameter<'a> {
+    fn build(self) -> AstParameter<'a> {
 
         let Some(param_name) = self.param_name else {
             panic!("Param name was not set")
@@ -161,6 +200,6 @@ impl <'a> Build<AstParameter<'a>> for ParameterBuilder<'a> {
             panic!("Param type was not set")
         };
 
-        AstParameter::new(param_name, param_type)
+        AstParameter::new(param_name, param_type, self.is_array)
     }
 }

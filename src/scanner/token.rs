@@ -12,6 +12,8 @@ pub enum TokenType {
     RightParen,
     LeftBrace,
     RightBrace,
+    LeftSquareBracket,
+    RightSquareBracket,
     // DoubleQuote,
     SemiColon,
     Dot,

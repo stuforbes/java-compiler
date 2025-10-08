@@ -3,13 +3,13 @@ mod scanner;
 mod spike;
 pub mod ast;
 pub mod test_support;
-mod compiler;
+pub mod compiler;
 
 use crate::ast::to_ast;
 use crate::ast::class::AstClass;
 
 #[allow(clippy::needless_lifetimes)]
-pub fn build<'a>(source: &'a str) -> AstClass<'a> {
+pub fn build_ast<'a>(source: &'a str) -> AstClass<'a> {
     let tokens = scanner::scan(source);
     to_ast(tokens)
 }

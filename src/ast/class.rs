@@ -1,4 +1,3 @@
-
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub enum AstScope {
     Public,
@@ -16,19 +15,20 @@ pub struct AstClass<'a> {
     methods: Vec<AstMethod<'a>>,
 }
 
-impl <'a> AstClass<'a> {
-    pub fn new(name: &'a str,
-               scope: AstScope,
-               is_static: bool,
-               is_final: bool,
-               methods: Vec<AstMethod<'a>>
+impl<'a> AstClass<'a> {
+    pub fn new(
+        name: &'a str,
+        scope: AstScope,
+        is_static: bool,
+        is_final: bool,
+        methods: Vec<AstMethod<'a>>,
     ) -> Self {
         Self {
             name,
             scope,
             is_static,
             is_final,
-            methods
+            methods,
         }
     }
 
@@ -52,28 +52,51 @@ impl <'a> AstClass<'a> {
 #[derive(Debug)]
 pub struct AstMethod<'a> {
     name: &'a str,
+    scope: AstScope,
+    is_final: bool,
+    is_static: bool,
     return_type: &'a str,
     parameters: Vec<AstParameter<'a>>,
     statements: Vec<&'a str>,
 }
 
-impl <'a> AstMethod<'a> {
-    pub fn new(name: &'a str,
-               return_type: &'a str,
-               parameters: Vec<AstParameter<'a>>,
-               statements: Vec<&'a str>
+impl<'a> AstMethod<'a> {
+    pub fn new(
+        name: &'a str,
+        scope: AstScope,
+        is_final: bool,
+        is_static: bool,
+        return_type: &'a str,
+        parameters: Vec<AstParameter<'a>>,
+        statements: Vec<&'a str>,
     ) -> Self {
         Self {
             name,
+            scope,
+            is_final,
+            is_static,
             return_type,
             parameters,
-            statements
+            statements,
         }
     }
 
     pub fn name(&self) -> &'a str {
         self.name
     }
+    
+    pub fn scope(&self) -> AstScope {
+        self.scope
+    }
+    
+    pub fn is_final(&self) -> bool {
+        self.is_final
+    }
+    
+    pub fn is_static(&self) -> bool {
+        self.is_static
+    }
+    
     pub fn return_type(&self) -> &'a str {
         self.return_type
     }
@@ -89,13 +112,15 @@ impl <'a> AstMethod<'a> {
 pub struct AstParameter<'a> {
     param_name: &'a str,
     param_type: &'a str,
+    is_array: bool,
 }
 
 impl <'a> AstParameter<'a> {
-    pub fn new(param_name: &'a str, param_type: &'a str) -> Self {
+    pub fn new(param_name: &'a str, param_type: &'a str, is_array: bool) -> Self {
         Self {
             param_name,
-            param_type
+            param_type,
+            is_array,
         }
     }
 
@@ -104,5 +129,9 @@ impl <'a> AstParameter<'a> {
     }
     pub fn param_type(&self) -> &'a str {
         self.param_type
+    }
+    
+    pub fn is_array(&self) -> bool {
+        self.is_array
     }
 }

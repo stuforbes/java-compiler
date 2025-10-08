@@ -1,11 +1,11 @@
 use crate::ast::class::{AstClass, AstMethod, AstParameter};
-use crate::build;
+use crate::build_ast;
 use crate::io::read_file;
 use crate::test_support::{check_and_report_difference, check_and_report_difference_nested, do_comparison, ComparisonResult};
 
 pub fn build_class_from_source_file_and_compare<'a>(file_path: &str, expected_class: AstClass) {
     let source = read_file(file_path);
-    let actual_class = build(source.as_str());
+    let actual_class = build_ast(source.as_str());
 
     let result = do_comparison(&expected_class, &actual_class, compare_classes);
 

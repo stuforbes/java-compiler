@@ -15,6 +15,8 @@ lazy_static! {
         (')', TokenType::RightParen),
         ('{', TokenType::LeftBrace),
         ('}', TokenType::RightBrace),
+        ('[', TokenType::LeftSquareBracket),
+        (']', TokenType::RightSquareBracket),
         (';', TokenType::SemiColon),
         ('.', TokenType::Dot),
         (',', TokenType::Comma),
@@ -92,6 +94,7 @@ impl<'a> Scanner<'a> {
         }
 
         // Handle unexpected character
+
     }
 
     fn create_token(&self, token_type: TokenType) -> Token<'a> {

@@ -13,8 +13,11 @@ fn should_build_simple_ast() {
             vec![
                 AstMethod::new(
                     "main",
+                    AstScope::Public,
+                    false,
+                    false,
                     "void",
-                    vec![AstParameter::new("args", "String")],
+                    vec![AstParameter::new("args", "String", false)],
                     vec![]
                 )
             ]

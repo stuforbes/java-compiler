@@ -61,7 +61,11 @@ pub fn to_ast(tokens: Vec<Token>) -> AstClass {
                     // No op
                 }
                 State::MethodQualifier => {
-                    class_builder.with_new_method()
+                    class_builder.with_new_method();
+                    class_builder.latest_method().with_scope(scope_for(token.token_type()));
+                }
+                State::MethodStatic => {
+                    class_builder.latest_method().as_static()
                 }
                 State::MethodReturn => {
                     let method = class_builder.latest_method();
@@ -78,6 +82,13 @@ pub fn to_ast(tokens: Vec<Token>) -> AstClass {
                     let method = class_builder.latest_method();
                     method.with_new_parameter();
                     method.latest_parameter().with_type(token.lexeme())
+                }
+                State::MethodParameterArrayIndicatorStart => {
+                    // No op
+                }
+                State::MethodParameterArrayIndicatorEnd => {
+                    let method = class_builder.latest_method();
+                    method.latest_parameter().as_array();
                 }
                 State::MethodParameterName => {
                     let method = class_builder.latest_method();
