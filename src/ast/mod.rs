@@ -1,12 +1,13 @@
 use crate::ast::class::{AstClass, AstScope};
 use crate::ast::class_builder::{Build, ClassBuilder};
-use crate::ast::state_machine::State::MethodBody;
-use crate::ast::state_machine::{State, StateMachine};
+use crate::ast::class_state_machine_factory::ClassState;
 use crate::scanner::{Token, TokenType};
 
 mod state_machine;
 mod class_builder;
 pub mod class;
+mod method_state_machine;
+mod class_state_machine_factory;
 
 struct AstParser<'a> {
     position: usize,
@@ -38,70 +39,70 @@ impl <'a> AstParser<'a> {
 
 pub fn to_ast(tokens: Vec<Token>) -> AstClass {
     let mut parser = AstParser::for_tokens(tokens);
-    let mut state_machine = StateMachine::new();
+    let mut state_machine = class_state_machine_factory::load();
     let mut class_builder = ClassBuilder::new();
 
     while parser.has_more_tokens() {
         let token = parser.next_token();
         if let Some(state) = state_machine.on_token(token.token_type()) {
             match state {
-                State::Initial => {
+                ClassState::Initial => {
                     // No op
                 }
-                State::ClassScope => {
+                ClassState::ClassScope => {
                     class_builder.with_scope(scope_for(token.token_type()))
                 }
-                State::ClassDefinition => {
+                ClassState::ClassDefinition => {
                     // TODO: Figure out how to put class builder creation here
                 }
-                State::ClassName => {
+                ClassState::ClassName => {
                     class_builder.named(token.lexeme())
                 }
-                State::ClassBody => {
+                ClassState::ClassBody => {
                     // No op
                 }
-                State::MethodQualifier => {
+                ClassState::MethodQualifier => {
                     class_builder.with_new_method();
                     class_builder.latest_method().with_scope(scope_for(token.token_type()));
                 }
-                State::MethodStatic => {
+                ClassState::MethodStatic => {
                     class_builder.latest_method().as_static()
                 }
-                State::MethodReturn => {
+                ClassState::MethodReturn => {
                     let method = class_builder.latest_method();
                     method.with_return_type(token.lexeme())
                 }
-                State::MethodName => {
+                ClassState::MethodName => {
                     let method = class_builder.latest_method();
                     method.with_name(token.lexeme())
                 }
-                State::MethodParameters => {
+                ClassState::MethodParameters => {
                     // No op
                 }
-                State::MethodParameterType => {
+                ClassState::MethodParameterType => {
                     let method = class_builder.latest_method();
                     method.with_new_parameter();
                     method.latest_parameter().with_type(token.lexeme())
                 }
-                State::MethodParameterArrayIndicatorStart => {
+                ClassState::MethodParameterArrayIndicatorStart => {
                     // No op
                 }
-                State::MethodParameterArrayIndicatorEnd => {
+                ClassState::MethodParameterArrayIndicatorEnd => {
                     let method = class_builder.latest_method();
                     method.latest_parameter().as_array();
                 }
-                State::MethodParameterName => {
+                ClassState::MethodParameterName => {
                     let method = class_builder.latest_method();
                     method.latest_parameter().with_name(token.lexeme())
                 }
-                State::MethodParametersEnd => {
+                ClassState::MethodParametersEnd => {
                     // No op
                 }
-                MethodBody => {}
-                State::ClassEnd => {}
-                State::Eof => {}
+                ClassState::MethodBody => {}
+                ClassState::ClassEnd => {}
+                ClassState::Eof => {}
             }
-            if state == MethodBody {
+            if state == ClassState::MethodBody {
                 parse_body(&mut parser);
             }
         }
