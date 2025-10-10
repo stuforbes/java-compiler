@@ -1,4 +1,4 @@
-use crate::ast::class::{AstClass, AstMethod, AstParameter};
+use crate::ast::class::{AstClass, AstMethod, AstParameter, AstStatement};
 use crate::build_ast;
 use crate::io::read_file;
 use crate::test_support::{check_and_report_difference, check_and_report_difference_nested, do_comparison, ComparisonResult};
@@ -33,6 +33,6 @@ fn check_and_report_differences_in_parameters(expected_parameter: &AstParameter,
     check_and_report_difference(expected_parameter.param_type(), actual_parameter.param_type(), format!("{:}.param_type", name).as_str(), differences);
 }
 
-fn check_and_report_differences_in_statements(expected_statement: &&str, actual_statement: &&str, name: &str, differences: &mut Vec<String>) {
-    check_and_report_difference(expected_statement, actual_statement, format!("{:}.statement", name).as_str(), differences);
+fn check_and_report_differences_in_statements(expected_statement: &AstStatement, actual_statement: &AstStatement, name: &str, differences: &mut Vec<String>) {
+    check_and_report_difference(expected_statement.line(), actual_statement.line(), format!("{:}.line", name).as_str(), differences);
 }

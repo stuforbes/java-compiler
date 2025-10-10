@@ -1,4 +1,4 @@
-use crate::ast::class::{AstClass, AstMethod, AstParameter, AstScope};
+use crate::ast::class::{AstClass, AstMethod, AstParameter, AstScope, AstStatement};
 use crate::ast::class_builder::AstScope::Default;
 
 pub trait Build<T> {
@@ -84,7 +84,7 @@ pub struct MethodBuilder<'a> {
     is_final: bool,
     return_type: Option<&'a str>,
     parameters: Vec<ParameterBuilder<'a>>,
-    statements: Vec<&'a str>,
+    statements: Vec<StatementBuilder<'a>>,
 }
 
 impl<'a> MethodBuilder<'a> {
@@ -128,6 +128,17 @@ impl<'a> MethodBuilder<'a> {
         match self.parameters.last_mut() {
             Some(m) => m,
             None => panic!("Expected parameter to exist"),
+        }
+    }
+    
+    pub fn with_new_statement(&mut self) {
+        self.statements.push(StatementBuilder::new());
+    }
+    
+    pub fn latest_statement(&mut self) -> &mut StatementBuilder<'a> {
+        match self.statements.last_mut() {
+            Some(s) => s,
+            None => panic!("Expected statement to exist"),
         }
     }
 }
@@ -201,5 +212,24 @@ impl <'a> Build<AstParameter<'a>> for ParameterBuilder<'a> {
         };
 
         AstParameter::new(param_name, param_type, self.is_array)
+    }
+}
+
+#[derive(Clone)]
+pub struct StatementBuilder<'a> {
+    line: &'a str,
+}
+
+impl <'a> StatementBuilder<'a> {
+    pub fn new() -> Self {
+        Self {
+            line: "todo"
+        }
+    }
+}
+
+impl <'a> Build<AstStatement<'a>> for StatementBuilder<'a> {
+    fn build(self) -> AstStatement<'a> {
+        AstStatement::new(self.line)
     }
 }

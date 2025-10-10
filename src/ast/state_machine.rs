@@ -17,6 +17,7 @@ enum StateMachineError<State> {
 }
 
 pub struct StateMachine<State> {
+    initial_state: State,
     current_state: State,
     state_contexts: HashMap<(State, TokenType), Operation<State>>,
 }
@@ -25,9 +26,14 @@ impl <State> StateMachine<State>
 where State: Eq + Hash + Copy + Clone + Debug {
     pub fn new(initial_state: State, state_contexts: HashMap<(State, TokenType), Operation<State>>) -> Self {
         Self {
+            initial_state,
             current_state: initial_state,
             state_contexts,
         }
+    }
+
+    pub fn reset(&mut self) {
+        self.current_state = self.initial_state
     }
 
     pub fn on_token(&mut self, token_type: TokenType) -> Option<State> {

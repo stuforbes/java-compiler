@@ -1,13 +1,15 @@
 use crate::ast::class::{AstClass, AstScope};
 use crate::ast::class_builder::{Build, ClassBuilder};
 use crate::ast::class_state_machine_factory::ClassState;
+use crate::ast::method_builder::build_method_statements;
 use crate::scanner::{Token, TokenType};
 
 mod state_machine;
 mod class_builder;
 pub mod class;
-mod method_state_machine;
+mod method_state_machine_factory;
 mod class_state_machine_factory;
+mod method_builder;
 
 struct AstParser<'a> {
     position: usize,
@@ -39,12 +41,13 @@ impl <'a> AstParser<'a> {
 
 pub fn to_ast(tokens: Vec<Token>) -> AstClass {
     let mut parser = AstParser::for_tokens(tokens);
-    let mut state_machine = class_state_machine_factory::load();
+    let mut class_state_machine = class_state_machine_factory::load();
+    let mut method_state_machine = method_state_machine_factory::load();
     let mut class_builder = ClassBuilder::new();
 
     while parser.has_more_tokens() {
         let token = parser.next_token();
-        if let Some(state) = state_machine.on_token(token.token_type()) {
+        if let Some(state) = class_state_machine.on_token(token.token_type()) {
             match state {
                 ClassState::Initial => {
                     // No op
@@ -98,7 +101,11 @@ pub fn to_ast(tokens: Vec<Token>) -> AstClass {
                 ClassState::MethodParametersEnd => {
                     // No op
                 }
-                ClassState::MethodBody => {}
+                ClassState::MethodBody => {
+                    let mut method = class_builder.latest_method();
+                    method_state_machine.reset();
+                    build_method_statements(&mut method, &mut parser, &mut method_state_machine);
+                }
                 ClassState::ClassEnd => {}
                 ClassState::Eof => {}
             }

@@ -57,7 +57,7 @@ pub struct AstMethod<'a> {
     is_static: bool,
     return_type: &'a str,
     parameters: Vec<AstParameter<'a>>,
-    statements: Vec<&'a str>,
+    statements: Vec<AstStatement<'a>>,
 }
 
 impl<'a> AstMethod<'a> {
@@ -68,7 +68,7 @@ impl<'a> AstMethod<'a> {
         is_static: bool,
         return_type: &'a str,
         parameters: Vec<AstParameter<'a>>,
-        statements: Vec<&'a str>,
+        statements: Vec<AstStatement<'a>>,
     ) -> Self {
         Self {
             name,
@@ -84,26 +84,26 @@ impl<'a> AstMethod<'a> {
     pub fn name(&self) -> &'a str {
         self.name
     }
-    
+
     pub fn scope(&self) -> AstScope {
         self.scope
     }
-    
+
     pub fn is_final(&self) -> bool {
         self.is_final
     }
-    
+
     pub fn is_static(&self) -> bool {
         self.is_static
     }
-    
+
     pub fn return_type(&self) -> &'a str {
         self.return_type
     }
     pub fn parameters(&self) -> &Vec<AstParameter<'a>> {
         &self.parameters
     }
-    pub fn statements(&self) -> &Vec<&'a str> {
+    pub fn statements(&self) -> &Vec<AstStatement<'a>> {
         &self.statements
     }
 }
@@ -130,8 +130,25 @@ impl <'a> AstParameter<'a> {
     pub fn param_type(&self) -> &'a str {
         self.param_type
     }
-    
+
     pub fn is_array(&self) -> bool {
         self.is_array
+    }
+}
+
+#[derive(Debug)]
+pub struct AstStatement<'a> {
+    line: &'a str,
+}
+
+impl <'a> AstStatement<'a> {
+    pub fn new(line: &'a str) -> Self {
+        Self {
+            line
+        }
+    }
+    
+    pub fn line(&self) -> &'a str {
+        self.line
     }
 }
