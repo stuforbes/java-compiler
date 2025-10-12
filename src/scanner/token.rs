@@ -27,35 +27,42 @@ pub enum TokenType {
 }
 
 #[derive(Debug, Copy, Clone)]
-#[allow(dead_code)]
 pub struct Token<'a> {
     token_type: TokenType,
     lexeme: Option<&'a str>,
     literal: Option<Literal<'a>>,
+    start: usize,
+    end: usize,
 }
 
 impl<'a> Token<'a> {
-    pub fn empty(token_type: TokenType) -> Self {
+    pub fn empty(token_type: TokenType, position: usize) -> Self {
         Self {
             token_type,
             lexeme: None,
             literal: None,
+            start: position,
+            end: position,
         }
     }
 
-    pub fn without_literal(token_type: TokenType, lexeme: &'a str) -> Self {
+    pub fn without_literal(token_type: TokenType, lexeme: &'a str, start: usize, end: usize) -> Self {
         Self {
             token_type,
             lexeme: Some(lexeme),
             literal: None,
+            start,
+            end,
         }
     }
 
-    pub fn with_literal(token_type: TokenType, lexeme: &'a str, literal: Literal<'a>) -> Self {
+    pub fn with_literal(token_type: TokenType, lexeme: &'a str, literal: Literal<'a>, start: usize, end: usize) -> Self {
         Self {
             token_type,
             lexeme: Some(lexeme),
             literal: Some(literal),
+            start,
+            end,
         }
     }
 
@@ -68,5 +75,13 @@ impl<'a> Token<'a> {
             Some(l) => l,
             None => panic!("Unavailable for token {:?}", self.token_type)
         }
+    }
+    
+    pub fn start(&self) -> usize {
+        self.start
+    }
+
+    pub fn end(&self) -> usize {
+        self.end
     }
 }

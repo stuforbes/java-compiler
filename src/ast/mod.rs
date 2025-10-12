@@ -7,19 +7,20 @@ use crate::scanner::{Token, TokenType};
 mod state_machine;
 mod class_builder;
 pub mod class;
-mod method_state_machine_factory;
 mod class_state_machine_factory;
 mod method_builder;
 
 struct AstParser<'a> {
     position: usize,
+    source: &'a str,
     tokens: Vec<Token<'a>>
 }
 
 impl <'a> AstParser<'a> {
-    fn for_tokens(tokens: Vec<Token<'a>>) -> Self {
+    fn for_tokens(source: &'a str, tokens: Vec<Token<'a>>) -> Self {
         Self {
             position: 0,
+            source,
             tokens,
         }
     }
@@ -37,12 +38,22 @@ impl <'a> AstParser<'a> {
     fn has_more_tokens(&self) -> bool {
         self.position < self.tokens.len()
     }
+    
+    fn position(&self) -> usize {
+        self.position
+    }
+    
+    fn lexemes_from_position(&self, from: usize, to: usize) -> &str {
+        let start_token = self.tokens[from];
+        let end_token = self.tokens[to];
+        
+        &self.source[start_token.start()..end_token.end()]
+    }
 }
 
-pub fn to_ast(tokens: Vec<Token>) -> AstClass {
-    let mut parser = AstParser::for_tokens(tokens);
+pub fn to_ast<'a>(source: &'a str, tokens: Vec<Token<'a>>) -> AstClass<'a> {
+    let mut parser = AstParser::for_tokens(source, tokens);
     let mut class_state_machine = class_state_machine_factory::load();
-    let mut method_state_machine = method_state_machine_factory::load();
     let mut class_builder = ClassBuilder::new();
 
     while parser.has_more_tokens() {
@@ -103,8 +114,7 @@ pub fn to_ast(tokens: Vec<Token>) -> AstClass {
                 }
                 ClassState::MethodBody => {
                     let mut method = class_builder.latest_method();
-                    method_state_machine.reset();
-                    build_method_statements(&mut method, &mut parser, &mut method_state_machine);
+                    build_method_statements(&mut method, &mut parser);
                 }
                 ClassState::ClassEnd => {}
                 ClassState::Eof => {}

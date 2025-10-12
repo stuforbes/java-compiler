@@ -56,7 +56,7 @@ impl<'a> Scanner<'a> {
 
             self.next_token();
         }
-        self.tokens.push(Token::empty(TokenType::Eof));
+        self.tokens.push(Token::empty(TokenType::Eof, self.current_position));
     }
 
     pub fn tokens(self) -> Vec<Token<'a>> {
@@ -101,6 +101,8 @@ impl<'a> Scanner<'a> {
         Token::without_literal(
             token_type,
             &self.source[self.token_start..self.current_position],
+            self.token_start,
+            self.current_position,
         )
     }
 
@@ -109,6 +111,8 @@ impl<'a> Scanner<'a> {
             token_type,
             &self.source[self.token_start..self.current_position],
             literal,
+            self.token_start,
+            self.current_position,
         )
     }
 
