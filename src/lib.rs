@@ -11,5 +11,5 @@ use crate::ast::class::AstClass;
 #[allow(clippy::needless_lifetimes)]
 pub fn build_ast<'a>(source: &'a str) -> AstClass<'a> {
     let tokens = scanner::scan(source);
-    to_ast(tokens)
+    to_ast(source, tokens)
 }
