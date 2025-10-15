@@ -1,13 +1,12 @@
 use crate::ast::expression::Expression;
 use crate::ast::statement::Statement;
 use crate::ast::AstParser;
-use crate::scanner::{Token, TokenType};
+use crate::scanner::{Literal, Token, TokenType};
 
 pub struct AstStatementBuilder<'p, 'src, 'tokens, 'ast>
 where
     'src: 'tokens,
-    'tokens: 'ast,
-    'ast: 'p,
+    'src: 'ast
 {
     parser: &'p mut AstParser<'src, 'tokens>,
     statements: Vec<Statement<'ast>>,
@@ -16,8 +15,6 @@ where
 impl<'p, 'src, 'tokens, 'ast> AstStatementBuilder<'p, 'src, 'tokens, 'ast>
 where
     'src: 'tokens,
-    'tokens: 'ast,
-    'ast: 'p,
 {
     pub(crate) fn new(parser: &'p mut AstParser<'src, 'tokens>) -> Self {
         Self {
@@ -37,25 +34,8 @@ where
     }
 
     fn next_statement(&mut self) {
-        // let next_token = self.parser.peek_next();
-        self.expression_statement();
-        // match next_token.token_type() {
-        //     TokenType::Class => panic!("Unexpected token {:?}", next_token),
-        //     TokenType::Public => panic!("Unexpected token {:?}", next_token),
-        //     TokenType::Static => panic!("Unexpected token {:?}", next_token),
-        //     TokenType::LeftParen => todo!(),
-        //     TokenType::RightParen => todo!(),
-        //     TokenType::LeftBrace => todo!(),
-        //     TokenType::RightBrace => todo!(),
-        //     TokenType::LeftSquareBracket => todo!(),
-        //     TokenType::RightSquareBracket => todo!(),
-        //     TokenType::SemiColon => todo!(),
-        //     TokenType::Dot => todo!(),
-        //     TokenType::Comma => todo!(),
-        //     TokenType::Identifier => todo!(),
-        //     TokenType::String => todo!(),
-        //     TokenType::Eof => panic!("Unexpected token {:?}", next_token),
-        // }
+        let statement = self.expression_statement();
+        self.statements.push(statement);
     }
 
     fn expression_statement(&mut self) -> Statement<'ast>
@@ -135,7 +115,11 @@ where
     fn string_literal(&mut self) -> Expression<'ast>
     {
         let token = self.consume(TokenType::String);
-        Expression::new_string_literal(token.lexeme())
+        match token.literal() {
+            Literal::String(value) => {
+                Expression::new_string_literal(value)
+            }
+        }
     }
 
     fn consume(&mut self, expected_type: TokenType) -> Token<'src> {

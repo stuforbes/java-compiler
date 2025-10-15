@@ -196,7 +196,7 @@ fn check_and_report_differences_in_expressions(
                 format!("{:}.arguments", name).as_str(),
                 differences,
                 |expected_argument, actual_argument, name, differences| {
-                    check_and_report_difference(
+                    check_and_report_differences_in_expressions(
                         expected_argument,
                         actual_argument,
                         name,
@@ -204,7 +204,10 @@ fn check_and_report_differences_in_expressions(
                     )
                 },
             );
-        }
+        },
+        (Expression::StringLiteral { value: expected_value }, Expression::StringLiteral { value: actual_value}) => {
+              check_and_report_difference(expected_value, actual_value, format!("{:}.value", name).as_str(), differences);
+        },
         (unknown_expected, unknown_actual) => differences.push(
             format!(
                 "{:} is different. Expected {:?} but was {:?}",

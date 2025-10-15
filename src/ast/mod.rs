@@ -2,18 +2,21 @@ use crate::ast::class::{AstClass, AstScope};
 use crate::ast::class_builder::{Build, ClassBuilder};
 use crate::ast::class_state_machine_factory::ClassState;
 use crate::ast::method_builder::AstStatementBuilder;
+use crate::ast::statement::Statement;
 use crate::scanner::{Token, TokenType};
 
 pub mod class;
-pub mod statement;
-pub mod expression;
 mod class_builder;
 mod class_state_machine_factory;
+pub mod expression;
 mod method_builder;
 mod state_machine;
+pub mod statement;
 
 struct AstParser<'src, 'token>
-where 'src: 'token{
+where
+    'src: 'token,
+{
     position: usize,
     source: &'src str,
     tokens: &'token [Token<'src>],
@@ -112,7 +115,12 @@ pub fn to_ast<'a>(source: &'a str, tokens: Vec<Token<'a>>) -> AstClass<'a> {
                     // No op
                 }
                 ClassState::MethodBody => {
-                    build_method_statements(&mut parser);
+                    let mut statement_builder = AstStatementBuilder::new(&mut parser);
+                    statement_builder.build();
+
+                    class_builder
+                        .latest_method()
+                        .with_statements(statement_builder.statements());
                 }
                 ClassState::ClassEnd => {}
                 ClassState::Eof => {}
@@ -121,14 +129,6 @@ pub fn to_ast<'a>(source: &'a str, tokens: Vec<Token<'a>>) -> AstClass<'a> {
     }
 
     class_builder.build()
-}
-
-fn build_method_statements<'src, 'tokens, 'p>(parser: &'p mut AstParser<'src, 'tokens>)
-where 'src: 'tokens,
-    'src: 'p,
-{
-    let mut statement_builder = AstStatementBuilder::new(parser);
-    statement_builder.build();
 }
 
 fn scope_for(token_type: TokenType) -> AstScope {

@@ -160,7 +160,7 @@ impl <'a> Build<AstMethod<'a>> for MethodBuilder<'a> {
             self.is_static,
             return_type,
             ast_parameters,
-            vec![]
+            self.statements
         )
     }
 }

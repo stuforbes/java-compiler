@@ -77,6 +77,13 @@ impl<'a> Token<'a> {
         }
     }
     
+    pub fn literal(&self) -> &Literal<'a> {
+        match &self.literal {
+            Some(l) => l,
+            None => panic!("Unavailable for token {:?}", self.token_type)
+        }
+    }
+    
     pub fn start(&self) -> usize {
         self.start
     }
