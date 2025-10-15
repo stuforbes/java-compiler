@@ -83,7 +83,7 @@ pub struct MethodBuilder<'a> {
     is_final: bool,
     return_type: Option<&'a str>,
     parameters: Vec<ParameterBuilder<'a>>,
-    statements: Vec<Box<dyn Statement>>,
+    statements: Vec<Statement<'a>>,
 }
 
 impl<'a> MethodBuilder<'a> {
@@ -130,7 +130,7 @@ impl<'a> MethodBuilder<'a> {
         }
     }
     
-    pub fn with_statements(&mut self, statements: Vec<Box<dyn Statement>>) {
+    pub fn with_statements(&mut self, statements: Vec<Statement<'a>>) {
         for statement in statements {
             self.statements.push(statement);
         }

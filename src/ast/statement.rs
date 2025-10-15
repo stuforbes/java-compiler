@@ -1,27 +1,12 @@
 use crate::ast::expression::Expression;
-use std::fmt::{Debug, Formatter};
+use std::fmt::Debug;
 
-pub trait Statement: Debug {}
-
-// pub enum Statement {
-//     Expression { expression: Expression },
-// }
-
-pub struct ExpressionStatement<'ast> {
-    expression: Box<dyn Expression + 'ast>,
+#[derive(Debug)]
+pub enum Statement<'ast> {
+    Expression { expression: Expression<'ast> },
 }
-impl<'ast> ExpressionStatement<'ast> {
-    pub fn new(expression: Box<dyn Expression + 'ast>) -> Self {
-        Self { expression }
+impl <'ast> Statement<'ast> {
+    pub fn new_expression_statement(expression: Expression) -> Statement {
+        Statement::Expression { expression }
     }
 }
-
-impl<'ast> Debug for ExpressionStatement<'ast> {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("ExpressionStatement")
-            .field("expression", &self.expression)
-            .finish()
-    }
-}
-
-impl<'ast> Statement for ExpressionStatement<'ast> {}

@@ -1,21 +1,23 @@
-use crate::ast::expression::{CallExpression, Expression, StringLiteral};
-use crate::ast::statement::{ExpressionStatement, Statement};
+use crate::ast::expression::Expression;
+use crate::ast::statement::Statement;
 use crate::ast::AstParser;
 use crate::scanner::{Token, TokenType};
 
-pub struct AstStatementBuilder<'p, 'src, 'tokens>
+pub struct AstStatementBuilder<'p, 'src, 'tokens, 'ast>
 where
     'src: 'tokens,
-    'tokens: 'p,
+    'tokens: 'ast,
+    'ast: 'p,
 {
     parser: &'p mut AstParser<'src, 'tokens>,
-    statements: Vec<Box<dyn Statement>>,
+    statements: Vec<Statement<'ast>>,
 }
 
-impl<'p, 'src, 'tokens> AstStatementBuilder<'p, 'src, 'tokens>
+impl<'p, 'src, 'tokens, 'ast> AstStatementBuilder<'p, 'src, 'tokens, 'ast>
 where
     'src: 'tokens,
-    'tokens: 'p,
+    'tokens: 'ast,
+    'ast: 'p,
 {
     pub(crate) fn new(parser: &'p mut AstParser<'src, 'tokens>) -> Self {
         Self {
@@ -30,7 +32,7 @@ where
         }
     }
 
-    pub fn statements(self) -> Vec<Box<dyn Statement>> {
+    pub fn statements(self) -> Vec<Statement<'ast>> {
         self.statements
     }
 
@@ -56,19 +58,15 @@ where
         // }
     }
 
-    fn expression_statement<'ast>(&mut self) -> Box<dyn Statement + 'ast>
-    where
-        'src: 'ast,
+    fn expression_statement(&mut self) -> Statement<'ast>
     {
         let expression = self.expression();
         self.consume(TokenType::SemiColon);
 
-        Box::new(ExpressionStatement::new(expression))
+        Statement::new_expression_statement(expression)
     }
 
-    fn expression<'ast>(&mut self) -> Box<dyn Expression + 'ast>
-    where
-        'src: 'ast,
+    fn expression(&mut self) -> Expression<'ast>
     {
         let next_token = self.parser.peek_next();
         if next_token.token_type() == TokenType::Identifier {
@@ -81,9 +79,7 @@ where
         todo!()
     }
 
-    fn identifier_expression<'ast>(&mut self) -> Box<dyn Expression + 'ast>
-    where
-        'src: 'ast,
+    fn identifier_expression(&mut self) -> Expression<'ast>
     {
         self.identifier_expression_for_fully_qualified_object(
             self.parser.position(),
@@ -91,13 +87,11 @@ where
         )
     }
 
-    fn identifier_expression_for_fully_qualified_object<'ast>(
+    fn identifier_expression_for_fully_qualified_object(
         &mut self,
         object_path_start: usize,
         object_path_end: usize,
-    ) -> Box<dyn Expression + 'ast>
-    where
-        'src: 'ast,
+    ) -> Expression<'ast>
     {
         let position = self.parser.position();
         let start_token = self.consume(TokenType::Identifier);
@@ -114,16 +108,14 @@ where
         }
     }
 
-    fn call_expression<'ast>(
+    fn call_expression(
         &mut self,
         method_name: &'src str,
         object_start_position: usize,
         object_end_position: usize,
-    ) -> Box<dyn Expression + 'ast>
-    where
-        'src: 'ast,
+    ) -> Expression<'ast>
     {
-        let mut arguments: Vec<Box<dyn Expression>> = vec![];
+        let mut arguments: Vec<Expression<'ast>> = vec![];
         let mut next_token_type = self.parser.peek_next().token_type();
         while next_token_type != TokenType::RightParen {
             let arg = { self.expression() };
@@ -132,20 +124,18 @@ where
         }
         self.consume(TokenType::RightParen);
 
-        Box::new(CallExpression::new(
+        Expression::new_call(
             self.parser
                 .lexemes_from_position(object_start_position, object_end_position),
             method_name,
             arguments,
-        ))
+        )
     }
 
-    fn string_literal<'ast>(&mut self) -> Box<dyn Expression + 'ast>
-    where
-        'src: 'ast,
+    fn string_literal(&mut self) -> Expression<'ast>
     {
         let token = self.consume(TokenType::String);
-        Box::new(StringLiteral::new(token.lexeme()))
+        Expression::new_string_literal(token.lexeme())
     }
 
     fn consume(&mut self, expected_type: TokenType) -> Token<'src> {

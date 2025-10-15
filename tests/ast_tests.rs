@@ -1,4 +1,6 @@
-use java_compiler::ast::class::{AstClass, AstMethod, AstParameter, AstScope, AstStatement};
+use java_compiler::ast::class::{AstClass, AstMethod, AstParameter, AstScope};
+use java_compiler::ast::expression::Expression;
+use java_compiler::ast::statement::Statement;
 use java_compiler::test_support::build_class_from_source_file_and_compare;
 
 #[test]
@@ -19,7 +21,15 @@ fn should_build_simple_ast() {
                     "void",
                     vec![AstParameter::new("args", "String", false)],
                     vec![
-                        AstStatement::new()
+                        Statement::new_expression_statement(
+                            Expression::new_call(
+                                "System.out",
+                                "println",
+                                vec![
+                                    Expression::new_string_literal("Hello World")
+                                ]
+                            )
+                        )
                     ]
                 )
             ]

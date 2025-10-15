@@ -59,7 +59,7 @@ pub struct AstMethod<'a> {
     is_static: bool,
     return_type: &'a str,
     parameters: Vec<AstParameter<'a>>,
-    statements: Vec<Box<dyn Statement + 'a>>,
+    statements: Vec<Statement<'a>>,
 }
 
 impl<'a> AstMethod<'a> {
@@ -70,7 +70,7 @@ impl<'a> AstMethod<'a> {
         is_static: bool,
         return_type: &'a str,
         parameters: Vec<AstParameter<'a>>,
-        statements: Vec<Box<dyn Statement +'a>>,
+        statements: Vec<Statement<'a>>,
     ) -> Self {
         Self {
             name,
@@ -105,7 +105,7 @@ impl<'a> AstMethod<'a> {
     pub fn parameters(&self) -> &Vec<AstParameter<'a>> {
         &self.parameters
     }
-    pub fn statements(&self) -> &Vec<Box<dyn Statement +'a>> {
+    pub fn statements(&self) -> &Vec<Statement<'a>> {
         &self.statements
     }
 }
