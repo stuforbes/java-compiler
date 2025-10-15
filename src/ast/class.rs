@@ -1,3 +1,5 @@
+use crate::ast::statement::Statement;
+
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub enum AstScope {
     Public,
@@ -57,7 +59,7 @@ pub struct AstMethod<'a> {
     is_static: bool,
     return_type: &'a str,
     parameters: Vec<AstParameter<'a>>,
-    statements: Vec<AstStatement<'a>>,
+    statements: Vec<Box<dyn Statement + 'a>>,
 }
 
 impl<'a> AstMethod<'a> {
@@ -68,7 +70,7 @@ impl<'a> AstMethod<'a> {
         is_static: bool,
         return_type: &'a str,
         parameters: Vec<AstParameter<'a>>,
-        statements: Vec<AstStatement<'a>>,
+        statements: Vec<Box<dyn Statement +'a>>,
     ) -> Self {
         Self {
             name,
@@ -103,7 +105,7 @@ impl<'a> AstMethod<'a> {
     pub fn parameters(&self) -> &Vec<AstParameter<'a>> {
         &self.parameters
     }
-    pub fn statements(&self) -> &Vec<AstStatement<'a>> {
+    pub fn statements(&self) -> &Vec<Box<dyn Statement +'a>> {
         &self.statements
     }
 }
@@ -133,22 +135,5 @@ impl <'a> AstParameter<'a> {
 
     pub fn is_array(&self) -> bool {
         self.is_array
-    }
-}
-
-#[derive(Debug)]
-pub struct AstStatement<'a> {
-    line: &'a str,
-}
-
-impl <'a> AstStatement<'a> {
-    pub fn new(line: &'a str) -> Self {
-        Self {
-            line
-        }
-    }
-    
-    pub fn line(&self) -> &'a str {
-        self.line
     }
 }

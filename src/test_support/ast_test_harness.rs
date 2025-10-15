@@ -1,4 +1,6 @@
-use crate::ast::class::{AstClass, AstMethod, AstParameter, AstStatement};
+use std::ops::Deref;
+use crate::ast::class::{AstClass, AstMethod, AstParameter};
+use crate::ast::statement::{ExpressionStatement, Statement};
 use crate::build_ast;
 use crate::io::read_file;
 use crate::test_support::{check_and_report_difference, check_and_report_difference_nested, do_comparison, ComparisonResult};
@@ -23,6 +25,8 @@ fn compare_classes(expected_class: &AstClass, actual_class: &AstClass, differenc
 
 fn check_and_report_differences_in_methods(expected_method: &AstMethod, actual_method: &AstMethod, name: &str, differences: &mut Vec<String>) {
     check_and_report_difference(expected_method.name(), actual_method.name(), format!("{:}.name", name).as_str(), differences);
+    check_and_report_difference(expected_method.is_static(), actual_method.is_static(), format!("{:}.static", name).as_str(), differences);
+    check_and_report_difference(expected_method.is_final(), actual_method.is_final(), format!("{:}.final", name).as_str(), differences);
     check_and_report_difference(expected_method.return_type(), actual_method.return_type(), format!("{:}.return_type", name).as_str(), differences);
     check_and_report_difference_nested(expected_method.parameters(), actual_method.parameters(), format!("{:}.parameters", name).as_str(), differences, check_and_report_differences_in_parameters);
     check_and_report_difference_nested(expected_method.statements(), actual_method.statements(), format!("{:}.statements", name).as_str(), differences, check_and_report_differences_in_statements);
@@ -33,6 +37,10 @@ fn check_and_report_differences_in_parameters(expected_parameter: &AstParameter,
     check_and_report_difference(expected_parameter.param_type(), actual_parameter.param_type(), format!("{:}.param_type", name).as_str(), differences);
 }
 
-fn check_and_report_differences_in_statements(expected_statement: &AstStatement, actual_statement: &AstStatement, name: &str, differences: &mut Vec<String>) {
-    check_and_report_difference(expected_statement.line(), actual_statement.line(), format!("{:}.line", name).as_str(), differences);
+fn check_and_report_differences_in_statements(expected_statement: Box<dyn Statement>, actual_statement: Box<dyn Statement>, name: &str, differences: &mut Vec<String>) {
+    match actual_statement.deref()  {
+        ExpressionStatement(expression) => {
+            check_and_report_difference(expected_statement.deref().expression(), expression, format!("{:}.line", name).as_str(), differences);
+        }
+    }
 }

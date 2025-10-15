@@ -1,4 +1,4 @@
-use java_compiler::ast::class::{AstClass, AstMethod, AstParameter, AstScope};
+use java_compiler::ast::class::{AstClass, AstMethod, AstParameter, AstScope, AstStatement};
 use java_compiler::test_support::build_class_from_source_file_and_compare;
 
 #[test]
@@ -15,10 +15,12 @@ fn should_build_simple_ast() {
                     "main",
                     AstScope::Public,
                     false,
-                    false,
+                    true,
                     "void",
                     vec![AstParameter::new("args", "String", false)],
-                    vec![]
+                    vec![
+                        AstStatement::new()
+                    ]
                 )
             ]
         )

@@ -5,6 +5,8 @@ use crate::ast::method_builder::AstStatementBuilder;
 use crate::scanner::{Token, TokenType};
 
 pub mod class;
+pub mod statement;
+pub mod expression;
 mod class_builder;
 mod class_state_machine_factory;
 mod method_builder;
@@ -125,7 +127,8 @@ fn build_method_statements<'src, 'tokens, 'p>(parser: &'p mut AstParser<'src, 't
 where 'src: 'tokens,
     'src: 'p,
 {
-    AstStatementBuilder::new(parser);
+    let mut statement_builder = AstStatementBuilder::new(parser);
+    statement_builder.build();
 }
 
 fn scope_for(token_type: TokenType) -> AstScope {
