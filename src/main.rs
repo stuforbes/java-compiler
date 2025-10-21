@@ -1,6 +1,6 @@
 use crate::io::read_file;
 use java_compiler::build_ast;
-use java_compiler::compiler::compile;
+use java_compiler::compiler::{compile, wrap, CompileError, CompileResult};
 use ristretto_classfile::ClassFile;
 use std::fs;
 
@@ -25,10 +25,11 @@ fn main() {
     }
 }
 
-fn write(file_name: &str, class_file: ClassFile) -> ristretto_classfile::Result<()> {
+fn write(file_name: &str, class_file: ClassFile) -> CompileResult<()> {
     let mut buffer = Vec::new();
-    class_file.to_bytes(&mut buffer)?;
+    // TODO: We shouldn't leak ristretto out of the compile module
+    wrap(class_file.to_bytes(&mut buffer))?;
 
     fs::write("{name}.class".replace("{name}", file_name), buffer)
-        .map_err(ristretto_classfile::Error::from)
+        .map_err(|e| CompileError::FileSystem(e))
 }

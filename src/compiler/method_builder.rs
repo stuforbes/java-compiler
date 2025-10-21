@@ -2,12 +2,14 @@ use crate::ast::class::{AstMethod, AstScope};
 use ristretto_classfile::{ConstantPool, Method, MethodAccessFlags};
 use ristretto_classfile::attributes::Attribute::Code;
 use ristretto_classfile::attributes::Instruction;
+use crate::compiler::instruction;
 use crate::compiler::resolved_class::ResolvedClass;
+use crate::compiler::result::{wrap, CompileResult};
 
 pub fn from(
     ast_method: &AstMethod,
     constant_pool: &mut ConstantPool,
-) -> ristretto_classfile::Result<Method> {
+) -> CompileResult<Method> {
     let method_access_flags =
         append_scope_flag_from(ast_method.scope(),
             append_final_flag_from(ast_method.is_final(),
@@ -17,22 +19,33 @@ pub fn from(
             )
         );
 
-    let main_method_code = constant_pool.add_utf8("Code")?;
+    let main_method_code = wrap(constant_pool.add_utf8("Code"))?;
+
+    let instructions: Vec<Instruction> = build_instructions(ast_method, constant_pool)?;
+
     Ok(Method {
         access_flags: method_access_flags,
-        name_index: constant_pool.add_utf8(ast_method.name())?,
-        descriptor_index: constant_pool.add_utf8(method_parameters_str(ast_method))?,
+        name_index: wrap(constant_pool.add_utf8(ast_method.name()))?,
+        descriptor_index: wrap(constant_pool.add_utf8(method_parameters_str(ast_method)))?,
         attributes: vec![Code {
             name_index: main_method_code,
             max_stack: 2, // need space for println parameters
             max_locals: 1, // args[]
-            code: vec![
-                Instruction::Return,
-            ],
+            code: instructions,
             exception_table: vec![],
             attributes: vec![],
         }],
     })
+}
+
+fn build_instructions(method: &AstMethod, constant_pool: &mut ConstantPool) -> CompileResult<Vec<Instruction>> {
+    let mut instructions: Vec<Instruction> = vec![];
+
+    for statement in method.statements() {
+        instructions.push(instruction::from(statement, constant_pool)?);
+    }
+
+    Ok(instructions)
 }
 
 fn append_scope_flag_from(

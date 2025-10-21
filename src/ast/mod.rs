@@ -2,7 +2,6 @@ use crate::ast::class::{AstClass, AstScope};
 use crate::ast::class_builder::{Build, ClassBuilder};
 use crate::ast::class_state_machine_factory::ClassState;
 use crate::ast::method_builder::AstStatementBuilder;
-use crate::ast::statement::Statement;
 use crate::scanner::{Token, TokenType};
 
 pub mod class;
