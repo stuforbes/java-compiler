@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use lazy_static::lazy_static;
-use crate::compiler::java::java_lang::build;
+use crate::java::java_lang::build;
 
 mod java_lang;
 
@@ -29,7 +29,14 @@ impl Packages {
                 return package.class_named(&name[last_dot+1..name.len()])
                     .map(|class| (package, class))
             }
+        } else {
+            // java.lang.* is imported by default. Ensure this isn't happening here
+            let java_lang = self.package_named("java.lang").unwrap();
+            return java_lang
+                .class_named(name)
+                .map(|class| (java_lang, class))
         }
+
         None
     }
 

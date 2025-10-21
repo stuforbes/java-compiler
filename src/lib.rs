@@ -4,6 +4,7 @@ mod spike;
 pub mod ast;
 pub mod test_support;
 pub mod compiler;
+pub mod java;
 
 use crate::ast::to_ast;
 use crate::ast::class::AstClass;

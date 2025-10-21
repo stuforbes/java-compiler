@@ -1,7 +1,7 @@
 use ristretto_classfile::attributes::Instruction;
 use ristretto_classfile::ConstantPool;
 use crate::ast::expression::Expression;
-use crate::compiler::java::java_packages;
+use crate::java::java_packages;
 use crate::compiler::result::{CompileError, CompileResult};
 use crate::compiler::wrap;
 
