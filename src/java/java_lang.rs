@@ -17,7 +17,7 @@ pub fn build() -> Package {
     };
 
     Package {
-        name: "java.lang",
+        name: "java/lang",
         classes: as_map(vec![system]),
     }
 }

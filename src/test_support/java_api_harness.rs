@@ -1,7 +1,6 @@
-use crate::java::{java, JavaClass};
+use crate::java::{java, JavaClass, Package};
 
-pub fn load_class(name: &str) -> Option<&JavaClass> {
+pub fn load_class<'a>(path: &'a [&'a str]) -> Option<(&'a Package, &'a JavaClass, &'a [&'a str])> {
     java()
-        .package_and_class_named(name)
-        .map(|(_, class)| class)
+        .parse_object_path(path)
 }

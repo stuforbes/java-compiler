@@ -24,13 +24,26 @@ impl Packages {
         Self { packages }
     }
 
-    pub fn package_and_class_named(&self, name: &str) -> Option<(&Package, &JavaClass)> {
-        let (package, name) = Packages::packagify(name);
+    pub fn parse_object_path<'a>(&self, path: &'a [&'a str]) -> Option<(&Package, &JavaClass, &'a [&'a str])> {
+        for i in (1..=path.len()).rev() {
+            let (prefix, suffix) = path.split_at(i);
+
+            if let Some((package, class)) = self.find_package_and_class_named(prefix) {
+                return Some((package, class, suffix))
+            }
+        }
+        None
+    }
+
+    fn find_package_and_class_named(&self, path: &[&str]) -> Option<(&Package, &JavaClass)> {
+        let path_str = path.join(".");
+        let (package, name) = Packages::packagify(path_str.as_str());
         if package.is_empty() {
             self.package_and_class_for_relative_name(name)
         } else {
             self.package_and_class_for(package, name)
         }
+
     }
 
     fn packagify(name: &str) -> (&str, &str) {
@@ -81,6 +94,7 @@ impl Named for Package {
         self.name
     }
 }
+
 impl Package {
     fn new(name: &'static str) -> Self {
         Self {
