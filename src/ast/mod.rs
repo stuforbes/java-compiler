@@ -48,11 +48,13 @@ impl<'src, 'token> AstParser<'src, 'token> {
         self.position
     }
 
-    fn lexemes_from_position(&self, from: usize, to: usize) -> &'src str {
-        let start_token = self.tokens[from];
-        let end_token = self.tokens[to];
+    fn lexemes_from_position(&self, from: usize, to: usize) -> Vec<&'src str> {
 
-        &self.source[start_token.start()..end_token.end()]
+        self.tokens[from..=to]
+            .iter()
+            .filter(|t| t.token_type() != TokenType::Dot)
+            .map(|t| t.lexeme())
+            .collect()
     }
 }
 

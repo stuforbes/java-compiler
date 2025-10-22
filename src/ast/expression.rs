@@ -3,7 +3,7 @@ use std::fmt::Debug;
 #[derive(PartialEq, Debug)]
 pub enum Expression<'ast> {
     Call {
-        object_path: &'ast str,
+        object_path: Vec<&'ast str>,
         method_name: &'ast str,
         arguments: Vec<Expression<'ast>>,
     },
@@ -13,7 +13,7 @@ pub enum Expression<'ast> {
 }
 impl<'ast> Expression<'ast> {
     pub fn new_call(
-        object_path: &'ast str,
+        object_path: Vec<&'ast str>,
         method_name: &'ast str,
         arguments: Vec<Expression<'ast>>,
     ) -> Self {

@@ -23,7 +23,7 @@ fn should_build_simple_ast() {
                     vec![
                         Statement::new_expression_statement(
                             Expression::new_call(
-                                "System.out",
+                                vec!["System", "out"],
                                 "println",
                                 vec![
                                     Expression::new_string_literal("Hello World")
