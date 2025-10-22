@@ -1,7 +1,4 @@
-use ristretto_classfile::attributes::Instruction;
 use ristretto_classfile::ConstantPool;
-use crate::ast::expression::Expression;
-use crate::ast::statement::Statement;
 use crate::compiler::resolved_class::ResolvedClass;
 use crate::compiler::resolved_class::ResolvedClass::FullyQualified;
 

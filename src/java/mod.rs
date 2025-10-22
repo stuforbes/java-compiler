@@ -1,17 +1,12 @@
+use once_cell::sync::Lazy;
 use std::collections::HashMap;
-use lazy_static::lazy_static;
-use crate::java::java_lang::build;
 
 mod java_lang;
 
-lazy_static! {
-    pub static ref java_packages: Packages = build_java();
-}
+static JAVA_PACKAGES: Lazy<Packages> = Lazy::new(|| Packages::new());
 
-pub fn build_java() -> Packages {
-    Packages {
-        packages: as_map(vec![build()])
-    }
+pub fn java() -> &'static Packages {
+    &JAVA_PACKAGES
 }
 
 trait Named {
@@ -19,25 +14,57 @@ trait Named {
 }
 
 pub struct Packages {
-    packages: HashMap<&'static str, Package>
+    packages: HashMap<&'static str, Package>,
 }
 impl Packages {
-    pub(crate) fn package_and_class_named(&self, name: &str) -> Option<(&Package, &JavaClass)> {
-        if let Some(last_dot) = name.rfind('.') {
-            let package_name = &name[0..last_dot];
-            if let Some(package) = self.package_named(package_name) {
-                return package.class_named(&name[last_dot+1..name.len()])
-                    .map(|class| (package, class))
-            }
-        } else {
-            // java.lang.* is imported by default. Ensure this isn't happening here
-            let java_lang = self.package_named("java.lang").unwrap();
-            return java_lang
-                .class_named(name)
-                .map(|class| (java_lang, class))
-        }
+    fn new() -> Self {
+        let mut packages = HashMap::new();
+        // java.lang is available as an implicit import to every class
+        packages.insert("java.lang", java_lang::build());
+        Self { packages }
+    }
 
-        None
+    pub fn package_and_class_named(&self, name: &str) -> Option<(&Package, &JavaClass)> {
+        let (package, name) = Packages::packagify(name);
+        if package.is_empty() {
+            self.package_and_class_for_relative_name(name)
+        } else {
+            self.package_and_class_for(package, name)
+        }
+    }
+
+    fn packagify(name: &str) -> (&str, &str) {
+        if let Some(last_dot) = name.rfind('.') {
+            (&name[0..last_dot], &name[last_dot + 1..name.len()])
+        } else {
+            ("", name)
+        }
+    }
+
+    fn package_and_class_for_relative_name(&self, name: &str) -> Option<(&Package, &JavaClass)> {
+        // TODO: Classes that are local to the source class will need to be resolved here
+        let java_lang = self.packages.get("java.lang").unwrap();
+
+        let class_exists = java_lang.class_named(name).is_some();
+        if !class_exists {
+            None
+        } else {
+            Some((java_lang, java_lang.class_named(name).unwrap()))
+        }
+    }
+
+    fn package_and_class_for(
+        &self,
+        package_name: &str,
+        class_name: &str,
+    ) -> Option<(&Package, &JavaClass)> {
+        if let Some(package) = self.package_named(package_name) {
+            package
+                .class_named(class_name)
+                .map(|class| (package, class))
+        } else {
+            None
+        }
     }
 
     fn package_named(&self, package_name: &str) -> Option<&Package> {
@@ -55,6 +82,17 @@ impl Named for Package {
     }
 }
 impl Package {
+    fn new(name: &'static str) -> Self {
+        Self {
+            name,
+            classes: HashMap::new(),
+        }
+    }
+
+    fn add_class(&mut self, class: JavaClass) {
+        self.classes.insert(class.name(), class);
+    }
+
     pub fn class_named(&self, class_name: &str) -> Option<&JavaClass> {
         self.classes.get(class_name)
     }
@@ -131,9 +169,7 @@ impl JavaField {
     }
 }
 
-pub fn as_map<T : Named>(
-    items: Vec<T>,
-) -> HashMap<&'static str, T> {
+pub fn as_map<T: Named>(items: Vec<T>) -> HashMap<&'static str, T> {
     let mut map: HashMap<&'static str, T> = HashMap::new();
     for item in items {
         map.insert(&item.name(), item);
