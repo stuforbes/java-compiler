@@ -1,6 +1,6 @@
 mod io;
 mod scanner;
-mod spike;
+pub mod spike;
 pub mod ast;
 pub mod test_support;
 pub mod compiler;

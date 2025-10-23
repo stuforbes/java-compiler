@@ -6,6 +6,6 @@ use crate::ast::statement::Statement;
 use crate::compiler::CompileResult;
 use crate::compiler::instruction::expression::from_expression;
 
-pub fn from(statement: &Statement, constant_pool: &mut ConstantPool) -> CompileResult<Instruction> {
+pub fn from(statement: &Statement, constant_pool: &mut ConstantPool) -> CompileResult<Vec<Instruction>> {
     match statement { Statement::Expression { expression } => from_expression(expression, constant_pool) }
 }

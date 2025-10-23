@@ -34,6 +34,10 @@ impl Packages {
         }
         None
     }
+    
+    pub fn class_for(&self, fully_qualified_class_name: &str) -> Option<JavaClass> {
+        None
+    }
 
     fn find_package_and_class_named(&self, path: &[&str]) -> Option<(&Package, &JavaClass)> {
         let path_str = path.join(".");
@@ -118,6 +122,7 @@ impl Package {
 
 pub struct JavaClass {
     name: &'static str,
+    descriptor: &'static str,
     methods: HashMap<&'static str, JavaMethod>,
     fields: HashMap<&'static str, JavaField>,
 }
@@ -130,12 +135,16 @@ impl JavaClass {
     pub fn name(&self) -> &'static str {
         self.name
     }
+    
+    pub fn descriptor(&self) -> &str {
+        self.descriptor
+    }
 
-    pub fn method_named(&self, name: &'static str) -> Option<&JavaMethod> {
+    pub fn method_named(&self, name: &str) -> Option<&JavaMethod> {
         self.methods.get(name)
     }
 
-    pub fn field_named(&self, name: &'static str) -> Option<&JavaField> {
+    pub fn field_named(&self, name: &str) -> Option<&JavaField> {
         self.fields.get(name)
     }
 }

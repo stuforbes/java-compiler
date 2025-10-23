@@ -7,7 +7,8 @@ pub enum CompileError {
     Ristretto(ristretto_classfile::Error),
     FileSystem(Error),
     UnknownClass(String),
-    UnknownMethod { class: String, method: String }
+    UnknownMethod { class: String, method: String },
+    UnknownField { class: String, field: String },
 }
 
 pub fn wrap<T>(result: ristretto_classfile::Result<T>) -> CompileResult<T> {

@@ -1,10 +1,15 @@
 use crate::io::read_file;
-use java_compiler::build_ast;
+use java_compiler::{build_ast, spike};
 use java_compiler::compiler::{compile, wrap, CompileError, CompileResult};
 use ristretto_classfile::ClassFile;
 use std::fs;
 
 mod io;
+
+#[allow(dead_code)]
+fn main_spike() {
+    spike::compile("Simple2")
+}
 
 fn main() {
     let source = read_file("samples/simple.java");

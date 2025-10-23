@@ -42,7 +42,10 @@ fn build_instructions(method: &AstMethod, constant_pool: &mut ConstantPool) -> C
     let mut instructions: Vec<Instruction> = vec![];
 
     for statement in method.statements() {
-        instructions.push(instruction::from(statement, constant_pool)?);
+        let statement_instructions = instruction::from(statement, constant_pool)?;
+        for statement_instruction in statement_instructions {
+            instructions.push(statement_instruction);
+        }
     }
 
     Ok(instructions)

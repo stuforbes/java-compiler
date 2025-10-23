@@ -3,6 +3,7 @@ use crate::java::{as_map, JavaClass, JavaField, Package};
 pub fn build() -> Package {
     let system = JavaClass {
         name: "System",
+        descriptor: "Ljava/lang/System;",
         fields: as_map(vec![
             JavaField {
                 name: "out",
