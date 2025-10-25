@@ -1,11 +1,10 @@
 mod expression;
 
 use ristretto_classfile::attributes::Instruction;
-use ristretto_classfile::ConstantPool;
 use crate::ast::statement::Statement;
-use crate::compiler::CompileResult;
+use crate::compiler::{CompilationContext, CompileResult};
 use crate::compiler::instruction::expression::from_expression;
 
-pub fn from(statement: &Statement, constant_pool: &mut ConstantPool) -> CompileResult<Vec<Instruction>> {
-    match statement { Statement::Expression { expression } => from_expression(expression, constant_pool) }
+pub fn from(statement: &Statement, compilation_context: &mut CompilationContext) -> CompileResult<Vec<Instruction>> {
+    match statement { Statement::Expression { expression } => from_expression(expression, compilation_context) }
 }

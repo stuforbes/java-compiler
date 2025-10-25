@@ -1,14 +1,14 @@
 use crate::ast::class::{AstMethod, AstScope};
-use ristretto_classfile::{ConstantPool, Method, MethodAccessFlags};
+use ristretto_classfile::{Method, MethodAccessFlags};
 use ristretto_classfile::attributes::Attribute::Code;
 use ristretto_classfile::attributes::Instruction;
-use crate::compiler::instruction;
+use crate::compiler::{instruction, CompilationContext};
 use crate::compiler::resolved_class::ResolvedClass;
 use crate::compiler::result::{wrap, CompileResult};
 
 pub fn from(
     ast_method: &AstMethod,
-    constant_pool: &mut ConstantPool,
+    compilation_context: &mut CompilationContext,
 ) -> CompileResult<Method> {
     let method_access_flags =
         append_scope_flag_from(ast_method.scope(),
@@ -19,14 +19,14 @@ pub fn from(
             )
         );
 
-    let main_method_code = wrap(constant_pool.add_utf8("Code"))?;
+    let main_method_code = wrap(compilation_context.constant_pool.borrow_mut().add_utf8("Code"))?;
 
-    let instructions: Vec<Instruction> = build_instructions(ast_method, constant_pool)?;
+    let instructions: Vec<Instruction> = build_instructions(ast_method, compilation_context)?;
 
     Ok(Method {
         access_flags: method_access_flags,
-        name_index: wrap(constant_pool.add_utf8(ast_method.name()))?,
-        descriptor_index: wrap(constant_pool.add_utf8(method_parameters_str(ast_method)))?,
+        name_index: wrap(compilation_context.constant_pool.borrow_mut().add_utf8(ast_method.name()))?,
+        descriptor_index: wrap(compilation_context.constant_pool.borrow_mut().add_utf8(method_parameters_str(ast_method)))?,
         attributes: vec![Code {
             name_index: main_method_code,
             max_stack: 2, // need space for println parameters
@@ -38,11 +38,11 @@ pub fn from(
     })
 }
 
-fn build_instructions(method: &AstMethod, constant_pool: &mut ConstantPool) -> CompileResult<Vec<Instruction>> {
+fn build_instructions(method: &AstMethod, compilation_context: &mut CompilationContext) -> CompileResult<Vec<Instruction>> {
     let mut instructions: Vec<Instruction> = vec![];
 
     for statement in method.statements() {
-        let statement_instructions = instruction::from(statement, constant_pool)?;
+        let statement_instructions = instruction::from(statement, compilation_context)?;
         for statement_instruction in statement_instructions {
             instructions.push(statement_instruction);
         }

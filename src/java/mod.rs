@@ -1,13 +1,7 @@
-use once_cell::sync::Lazy;
 use std::collections::HashMap;
 
+mod java_io;
 mod java_lang;
-
-static JAVA_PACKAGES: Lazy<Packages> = Lazy::new(|| Packages::new());
-
-pub fn java() -> &'static Packages {
-    &JAVA_PACKAGES
-}
 
 trait Named {
     fn name(&self) -> &'static str;
@@ -17,25 +11,48 @@ pub struct Packages {
     packages: HashMap<&'static str, Package>,
 }
 impl Packages {
-    fn new() -> Self {
+    pub(crate) fn new() -> Self {
         let mut packages = HashMap::new();
         // java.lang is available as an implicit import to every class
         packages.insert("java.lang", java_lang::build());
         Self { packages }
     }
 
-    pub fn parse_object_path<'a>(&self, path: &'a [&'a str]) -> Option<(&Package, &JavaClass, &'a [&'a str])> {
+    pub fn parse_object_path<'a>(
+        &self,
+        path: &'a [&'a str],
+    ) -> Option<(&Package, &JavaClass, &'a [&'a str])> {
         for i in (1..=path.len()).rev() {
             let (prefix, suffix) = path.split_at(i);
 
             if let Some((package, class)) = self.find_package_and_class_named(prefix) {
-                return Some((package, class, suffix))
+                return Some((package, class, suffix));
             }
         }
         None
     }
-    
-    pub fn class_for(&self, fully_qualified_class_name: &str) -> Option<JavaClass> {
+
+    pub fn class_for(&mut self, fully_qualified_class_name: &str) -> Option<&JavaClass> {
+        let (package_name, class_name) = Packages::packagify(fully_qualified_class_name);
+
+        if package_name == "java.io" {
+            if !self.packages.contains_key("java.io") {
+                self.packages.insert("java.io", Package::new("java.io"));
+            }
+
+            let package_rc = self.packages.get_mut(package_name).unwrap();
+
+            if package_rc.class_named(class_name).is_none() && java_io::contains_class(class_name) {
+                package_rc.add_class(java_io::load_class(class_name));
+            }
+        }
+
+        if self.packages.contains_key(package_name) {
+            return self
+                .packages
+                .get(package_name)
+                .and_then(|p| p.class_named(class_name));
+        }
         None
     }
 
@@ -47,7 +64,6 @@ impl Packages {
         } else {
             self.package_and_class_for(package, name)
         }
-
     }
 
     fn packagify(name: &str) -> (&str, &str) {
@@ -135,7 +151,7 @@ impl JavaClass {
     pub fn name(&self) -> &'static str {
         self.name
     }
-    
+
     pub fn descriptor(&self) -> &str {
         self.descriptor
     }
