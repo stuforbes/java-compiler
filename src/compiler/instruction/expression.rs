@@ -25,14 +25,14 @@ fn from_call_expression(
     compilation_context: &CompilationContext,
 ) -> CompileResult<Vec<Instruction>> {
 
-    if let Some((package, class, suffix)) = compilation_context.packages.borrow().parse_object_path(object_path) {
-        let fully_qualified_class = format!("{:}/{:}", package.name(), class.name());
+    if let Some((package_name, class_name, suffix)) = compilation_context.packages.borrow().parse_object_path(object_path) {
+        let fully_qualified_class = format!("{:}/{:}", package_name, class_name);
         let class_id = wrap(compilation_context.constant_pool.borrow_mut().add_class(&fully_qualified_class))?;
 
         if suffix.is_empty() {
             todo!("Static methods on classes not yet supported")
         } else if suffix.len() == 1 {
-            return from_static_field_on_class(class, class_id, suffix[0], method_name, arguments, compilation_context)
+            return from_static_field_on_class(fully_qualified_class.as_str(), class_id, suffix[0], method_name, arguments, compilation_context)
         } else {
             todo!("Multiple nested static fields not yet supported")
         }
@@ -42,7 +42,7 @@ fn from_call_expression(
 }
 
 fn from_static_field_on_class(
-    class: &JavaClass,
+    class: &str,
     class_id: u16,
     field_name: &str,
     method_name: &str,
@@ -50,15 +50,19 @@ fn from_static_field_on_class(
     compilation_context: &CompilationContext
 ) -> CompileResult<Vec<Instruction>> {
     let mut instructions: Vec<Instruction> = vec![];
-    if let Some(field) = class.field_named(field_name) {
-        if let Some(field_class) = compilation_context.packages.borrow_mut().class_for(field.class()) {
-            let field_class_id = wrap(compilation_context.constant_pool.borrow_mut().add_class(field_class.name()))?;
+    let mut packages = compilation_context.packages.borrow_mut();
+    if let Some(field) = packages.class_for(class).and_then(|c| c.field_named(field_name)) {
+        let mut packages = compilation_context.packages.borrow_mut();
+        let mut constant_pool = compilation_context.constant_pool.borrow_mut();
+
+        if let Some(field_class) = packages.class_for(field.class()) {
+            let field_class_id = wrap(constant_pool.add_class(field_class.name()))?;
             let field_ref = add_field_ref(field, &field_class, class_id, compilation_context)?;
             instructions.push(Instruction::Getstatic(field_ref));
 
             if let Some(method) = field_class.method_named(method_name) {
                 let method_id =
-                    wrap(compilation_context.constant_pool.borrow_mut().add_method_ref(field_class_id, method_name, method.descriptor()))?;
+                    wrap(constant_pool.add_method_ref(field_class_id, method_name, method.descriptor()))?;
 
                 for argument in arguments {
                     let argument_instructions = from_expression(argument, compilation_context)?;
@@ -83,7 +87,7 @@ fn from_static_field_on_class(
 
     } else {
         Err(CompileError::UnknownField {
-            class: class.name().to_string(),
+            class: class.to_string(),
             field: field_name.to_string(),
         })
     }

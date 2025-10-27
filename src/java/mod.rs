@@ -21,12 +21,12 @@ impl Packages {
     pub fn parse_object_path<'a>(
         &self,
         path: &'a [&'a str],
-    ) -> Option<(&Package, &JavaClass, &'a [&'a str])> {
+    ) -> Option<(&str, &str, &'a [&'a str])> {
         for i in (1..=path.len()).rev() {
             let (prefix, suffix) = path.split_at(i);
 
             if let Some((package, class)) = self.find_package_and_class_named(prefix) {
-                return Some((package, class, suffix));
+                return Some((package.name(), class.name(), suffix));
             }
         }
         None
