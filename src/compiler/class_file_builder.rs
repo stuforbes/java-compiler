@@ -7,26 +7,24 @@ const DEFAULT_SUPER_CLASS: &str = "java/lang/Object";
 
 pub fn from(
     class: &AstClass,
-    mut compilation_context: CompilationContext,
+    mut compilation_context: &mut CompilationContext,
 ) -> CompileResult<ClassFile> {
     let methods = map_methods(class.methods(), &mut compilation_context)?;
 
     let this_class = wrap(
         compilation_context
             .constant_pool
-            .borrow_mut()
             .add_class(class.name()),
     )?;
     let super_class = wrap(
         compilation_context
             .constant_pool
-            .borrow_mut()
             .add_class(DEFAULT_SUPER_CLASS),
     )?;
 
     let class_file = ClassFile {
         version: JAVA_21,
-        constant_pool: compilation_context.constant_pool.borrow().to_owned(),
+        constant_pool: compilation_context.constant_pool.to_owned(),
         this_class,
         super_class,
         methods,

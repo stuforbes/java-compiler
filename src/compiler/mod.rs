@@ -11,20 +11,19 @@ use crate::compiler::class_file_builder::from;
 pub use crate::compiler::result::{wrap, CompileError, CompileResult};
 use crate::java::Packages;
 use ristretto_classfile::{ClassFile, ConstantPool};
-use std::cell::RefCell;
 
 pub struct CompilationContext {
-    constant_pool: RefCell<ConstantPool>,
-    packages: RefCell<Packages>,
+    constant_pool: ConstantPool,
+    packages: Packages,
 }
 
 pub fn compile(class: &AstClass) -> CompileResult<ClassFile> {
     let constant_pool = ConstantPool::default();
     let packages = Packages::new();
-    let compilation_context = CompilationContext {
-        constant_pool: RefCell::new(constant_pool),
-        packages: RefCell::new(packages),
+    let mut compilation_context = CompilationContext {
+        constant_pool,
+        packages,
     };
 
-    from(class, compilation_context)
+    from(class, &mut compilation_context)
 }

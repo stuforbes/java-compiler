@@ -138,6 +138,7 @@ impl Package {
 
 pub struct JavaClass {
     name: &'static str,
+    full_name: &'static str,
     descriptor: &'static str,
     methods: HashMap<&'static str, JavaMethod>,
     fields: HashMap<&'static str, JavaField>,
@@ -150,6 +151,10 @@ impl Named for JavaClass {
 impl JavaClass {
     pub fn name(&self) -> &'static str {
         self.name
+    }
+    
+    pub fn qualified_name(&self) -> &'static str {
+        self.full_name
     }
 
     pub fn descriptor(&self) -> &str {

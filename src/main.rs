@@ -25,7 +25,7 @@ fn main() {
             println!("File written successfully")
         }
         Err(e) => {
-            println!("There was an error compiling Foo {:?}", e);
+            println!("There was an error compiling {:?}", e);
         }
     }
 }

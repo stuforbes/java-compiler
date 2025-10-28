@@ -44,16 +44,18 @@ fn do_compile_and_verify(file_name: &str) -> ristretto_classfile::Result<ClassFi
     let main_method_code = constant_pool.add_utf8("Code")?;
 
     // Code attribute for main
+    let instructions = vec![
+        Instruction::Getstatic(system_out).into(),  // System.out
+        Instruction::Ldc_w(hello_string_index), // "Hello world"
+        Instruction::Invokevirtual(println_method).into(), // println
+        Instruction::Return.into(),
+    ];
+    println!("{:?}", instructions);
     let code_attr = Code {
         name_index: main_method_code,
         max_stack: 2, // need space for println parameters
         max_locals: 1, // args[]
-        code: vec![
-            Instruction::Getstatic(system_out).into(),  // System.out
-            Instruction::Ldc_w(hello_string_index), // "Hello world"
-            Instruction::Invokevirtual(println_method).into(), // println
-            Instruction::Return.into(),
-        ],
+        code: instructions,
         exception_table: vec![],
         attributes: vec![],
     };

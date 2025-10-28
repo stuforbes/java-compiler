@@ -19,14 +19,14 @@ pub fn from(
             )
         );
 
-    let main_method_code = wrap(compilation_context.constant_pool.borrow_mut().add_utf8("Code"))?;
+    let main_method_code = wrap(compilation_context.constant_pool.add_utf8("Code"))?;
 
     let instructions: Vec<Instruction> = build_instructions(ast_method, compilation_context)?;
 
     Ok(Method {
         access_flags: method_access_flags,
-        name_index: wrap(compilation_context.constant_pool.borrow_mut().add_utf8(ast_method.name()))?,
-        descriptor_index: wrap(compilation_context.constant_pool.borrow_mut().add_utf8(method_parameters_str(ast_method)))?,
+        name_index: wrap(compilation_context.constant_pool.add_utf8(ast_method.name()))?,
+        descriptor_index: wrap(compilation_context.constant_pool.add_utf8(method_parameters_str(ast_method)))?,
         attributes: vec![Code {
             name_index: main_method_code,
             max_stack: 2, // need space for println parameters
@@ -47,6 +47,8 @@ fn build_instructions(method: &AstMethod, compilation_context: &mut CompilationC
             instructions.push(statement_instruction);
         }
     }
+
+    println!("{:?}", instructions);
 
     Ok(instructions)
 }
