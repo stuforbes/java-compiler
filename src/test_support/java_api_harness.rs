@@ -1,24 +1,16 @@
-use crate::java::{JavaClass, Packages};
+use crate::java::{JavaClass, ClassLoader};
 
 pub struct JavaApiHarness {
-    packages: Packages,
+    packages: ClassLoader,
 }
 impl JavaApiHarness {
     pub fn new() -> Self {
         Self {
-            packages: Packages::new(),
+            packages: ClassLoader::new(),
         }
     }
 
-    pub fn split_path_into_components<'a>(
-        &'a self,
-        path: &'a [&'a str],
-    ) -> Option<(String, String, Vec<&str>)> {
-        self.packages.parse_object_path(path)
-            .map(|(package, class, suffix)| (package.to_string(), class.to_string(), suffix.to_vec()))
-    }
-
     pub fn load_class(&mut self, fq_class_name: &str) -> &JavaClass {
-        self.packages.class_for(fq_class_name).unwrap()
+        self.packages.load(fq_class_name).unwrap()
     }
 }

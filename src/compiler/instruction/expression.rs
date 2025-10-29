@@ -2,6 +2,7 @@ use crate::ast::expression::Expression;
 use crate::compiler::result::{CompileError, CompileResult};
 use crate::compiler::{wrap, CompilationContext};
 use ristretto_classfile::attributes::Instruction;
+use crate::java::ClassLoader;
 
 pub fn from_expression(
     expression: &Expression,
@@ -23,10 +24,10 @@ fn from_call_expression(
     arguments: &Vec<Expression>,
     compilation_context: &mut CompilationContext,
 ) -> CompileResult<Vec<Instruction>> {
-    if let Some((package_name, class_name, suffix)) =
-        compilation_context.packages.parse_object_path(object_path)
+    if let Some((class_path, suffix)) =
+        parse_object_path(object_path, &mut compilation_context.class_loader)
     {
-        let class_descriptor = format!("{:}/{:}", package_name, class_name);
+        let class_descriptor = class_path.replace('.', "/");
         let class_id = wrap(
             compilation_context
                 .constant_pool
@@ -64,8 +65,8 @@ fn from_static_field_on_class(
 
     let field_class_name = {
         let field = compilation_context
-            .packages
-            .class_for(class)
+            .class_loader
+            .load(class)
             .and_then(|c| c.field_named(field_name));
 
         let field = field.ok_or_else(|| CompileError::UnknownField {
@@ -77,7 +78,7 @@ fn from_static_field_on_class(
     };
 
     let field_class_name_and_descriptor = {
-        let field_class_option = compilation_context.packages.class_for(field_class_name.as_str());
+        let field_class_option = compilation_context.class_loader.load(field_class_name.as_str());
         let field_class = field_class_option.ok_or_else(|| CompileError::UnknownClass(field_class_name.clone()) )?;
         (field_class.qualified_name().to_string(), field_class.descriptor().to_string())
     };
@@ -91,7 +92,7 @@ fn from_static_field_on_class(
     instructions.push(Instruction::Getstatic(field_ref));
 
     let method_descriptor = {
-        let method = compilation_context.packages.class_for(field_class_name.as_str())
+        let method = compilation_context.class_loader.load(field_class_name.as_str())
             .and_then(|field_class| field_class.method_named(method_name))
             .ok_or_else(|| CompileError::UnknownMethod { class: field_class_name_and_descriptor.0.to_string(), method: method_name.to_string() })?;
 
@@ -188,4 +189,18 @@ fn add_field_ref(
     ))?;
 
     Ok(field_ref)
+}
+
+fn parse_object_path<'a>(
+    path: &'a [&'a str],
+    class_loader: &mut ClassLoader
+) -> Option<(&'a str, &'a [&'a str])> {
+    for i in (1..=path.len()).rev() {
+        let (prefix, suffix) = path.split_at(i);
+
+        if let Some(class) = class_loader.load(prefix.join(".").as_str()) {
+            return Some((class.qualified_name(), suffix));
+        }
+    }
+    None
 }

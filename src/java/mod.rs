@@ -7,10 +7,10 @@ trait Named {
     fn name(&self) -> &'static str;
 }
 
-pub struct Packages {
+pub struct ClassLoader {
     packages: HashMap<&'static str, Package>,
 }
-impl Packages {
+impl ClassLoader {
     pub(crate) fn new() -> Self {
         let mut packages = HashMap::new();
         // java.lang is available as an implicit import to every class
@@ -18,22 +18,8 @@ impl Packages {
         Self { packages }
     }
 
-    pub fn parse_object_path<'a>(
-        &self,
-        path: &'a [&'a str],
-    ) -> Option<(&str, &str, &'a [&'a str])> {
-        for i in (1..=path.len()).rev() {
-            let (prefix, suffix) = path.split_at(i);
-
-            if let Some((package, class)) = self.find_package_and_class_named(prefix) {
-                return Some((package.name(), class.name(), suffix));
-            }
-        }
-        None
-    }
-
-    pub fn class_for(&mut self, fully_qualified_class_name: &str) -> Option<&JavaClass> {
-        let (package_name, class_name) = Packages::packagify(fully_qualified_class_name);
+    pub fn load(&mut self, fully_qualified_class_name: &str) -> Option<&JavaClass> {
+        let (package_name, class_name) = self.packagify(fully_qualified_class_name);
 
         if package_name == "java.io" {
             if !self.packages.contains_key("java.io") {
@@ -56,52 +42,16 @@ impl Packages {
         None
     }
 
-    fn find_package_and_class_named(&self, path: &[&str]) -> Option<(&Package, &JavaClass)> {
-        let path_str = path.join(".");
-        let (package, name) = Packages::packagify(path_str.as_str());
-        if package.is_empty() {
-            self.package_and_class_for_relative_name(name)
-        } else {
-            self.package_and_class_for(package, name)
-        }
-    }
-
-    fn packagify(name: &str) -> (&str, &str) {
+    fn packagify<'a>(&self, name: &'a str) -> (&'a str, &'a str) {
         if let Some(last_dot) = name.rfind('.') {
-            (&name[0..last_dot], &name[last_dot + 1..name.len()])
-        } else {
-            ("", name)
+            return (&name[0..last_dot], &name[last_dot + 1..name.len()]);
         }
-    }
-
-    fn package_and_class_for_relative_name(&self, name: &str) -> Option<(&Package, &JavaClass)> {
-        // TODO: Classes that are local to the source class will need to be resolved here
-        let java_lang = self.packages.get("java.lang").unwrap();
-
-        let class_exists = java_lang.class_named(name).is_some();
-        if !class_exists {
-            None
-        } else {
-            Some((java_lang, java_lang.class_named(name).unwrap()))
+        if let Some(java_lang) = self.packages.get("java.lang") {
+            if java_lang.class_named(name).is_some() {
+                return ("java.lang", name);
+            }
         }
-    }
-
-    fn package_and_class_for(
-        &self,
-        package_name: &str,
-        class_name: &str,
-    ) -> Option<(&Package, &JavaClass)> {
-        if let Some(package) = self.package_named(package_name) {
-            package
-                .class_named(class_name)
-                .map(|class| (package, class))
-        } else {
-            None
-        }
-    }
-
-    fn package_named(&self, package_name: &str) -> Option<&Package> {
-        self.packages.get(package_name)
+        ("", name)
     }
 }
 
@@ -152,7 +102,7 @@ impl JavaClass {
     pub fn name(&self) -> &'static str {
         self.name
     }
-    
+
     pub fn qualified_name(&self) -> &'static str {
         self.full_name
     }
