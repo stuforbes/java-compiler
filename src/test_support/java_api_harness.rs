@@ -1,4 +1,5 @@
-use crate::java::{JavaClass, ClassLoader};
+use crate::java::{new_class_loader, ClassLoader};
+use crate::java::class::JavaClass;
 
 pub struct JavaApiHarness {
     packages: ClassLoader,
@@ -6,7 +7,7 @@ pub struct JavaApiHarness {
 impl JavaApiHarness {
     pub fn new() -> Self {
         Self {
-            packages: ClassLoader::new(),
+            packages: new_class_loader(),
         }
     }
 

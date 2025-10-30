@@ -1,25 +1,21 @@
-use crate::java::{as_map, JavaClass, JavaField, Package};
+use crate::java::as_map;
+use crate::java::class::JavaClass;
+use crate::java::field::JavaField;
+use crate::java::package::Package;
 
 pub fn build() -> Package {
-    let system = JavaClass {
-        name: "System",
-        full_name: "java/lang/System",
-        descriptor: "Ljava/lang/System;",
-        fields: as_map(vec![
-            JavaField {
-                name: "out",
-                class: "java.io.PrintStream",
-            },
-            JavaField {
-                name: "err",
-                class: "java.io.PrintStream",
-            },
+    let system = JavaClass::new(
+        "System",
+        "java/lang/System",
+        "Ljava/lang/System;",
+        as_map(vec![]),
+        as_map(vec![
+            JavaField::new("out", "java.io.PrintStream"),
+            JavaField::new("err", "java.io.PrintStream"),
         ]),
-        methods: as_map(vec![]),
-    };
+    );
 
-    Package {
-        name: "java/lang",
-        classes: as_map(vec![system]),
-    }
+    let mut package = Package::new("java/lang");
+    package.add_class(system);
+    package
 }
