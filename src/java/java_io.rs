@@ -15,7 +15,7 @@ pub fn load_class(name: &str) -> JavaClass {
     match name {
         "PrintStream" => JavaClass::new(
             "PrintStream",
-            "java/io/PrintStream",
+            "java.io.PrintStream",
             "Ljava/io/PrintStream;",
             as_map(vec![
                 JavaMethod::new("println", "void", "(Ljava/lang/String;)V")

@@ -1,4 +1,6 @@
 mod expression;
+mod call;
+mod string_literal;
 
 use ristretto_classfile::attributes::Instruction;
 use crate::ast::statement::Statement;

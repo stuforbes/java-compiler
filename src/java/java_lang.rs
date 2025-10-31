@@ -6,7 +6,7 @@ use crate::java::package::Package;
 pub fn build() -> Package {
     let system = JavaClass::new(
         "System",
-        "java/lang/System",
+        "java.lang.System",
         "Ljava/lang/System;",
         as_map(vec![]),
         as_map(vec![

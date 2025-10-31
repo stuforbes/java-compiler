@@ -5,7 +5,7 @@ use crate::java::method::JavaMethod;
 
 pub struct JavaClass {
     name: &'static str,
-    full_name: &'static str,
+    path: &'static str,
     descriptor: &'static str,
     methods: HashMap<&'static str, JavaMethod>,
     fields: HashMap<&'static str, JavaField>,
@@ -18,14 +18,14 @@ impl Named for JavaClass {
 impl JavaClass {
     pub fn new(
         name: &'static str,
-        full_name: &'static str,
+        path: &'static str,
         descriptor: &'static str,
         methods: HashMap<&'static str, JavaMethod>,
         fields: HashMap<&'static str, JavaField>,
     ) -> Self {
         Self {
             name,
-            full_name,
+            path,
             descriptor,
             methods,
             fields,
@@ -36,8 +36,12 @@ impl JavaClass {
         self.name
     }
 
-    pub fn qualified_name(&self) -> &'static str {
-        self.full_name
+    pub fn path(&self) -> &'static str {
+        self.path
+    }
+
+    pub fn full_name(&self) -> String {
+        self.path.replace('.', "/")
     }
 
     pub fn descriptor(&self) -> &str {
