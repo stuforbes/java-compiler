@@ -1,6 +1,7 @@
 use crate::ast::expression::Expression;
 use crate::compiler::instruction::expression::from_expression;
 use crate::compiler::{wrap, CompilationContext, CompileError, CompileResult};
+use crate::java::class::JavaClass;
 use crate::java::ClassLoader;
 use ristretto_classfile::attributes::Instruction;
 
@@ -17,14 +18,7 @@ pub fn from_call_expression(
         if suffix.is_empty() {
             todo!("Static methods on classes not yet supported")
         } else if suffix.len() == 1 {
-            return from_static_field_on_class(
-                class_path,
-                class_id,
-                suffix[0],
-                method_name,
-                arguments,
-                compilation_context,
-            );
+            return from_static_field_on_class(class_path, class_id, suffix[0], method_name, arguments, compilation_context);
         } else {
             todo!("Multiple nested static fields not yet supported")
         }
@@ -43,44 +37,17 @@ fn from_static_field_on_class(
 ) -> CompileResult<Vec<Instruction>> {
     let mut instructions: Vec<Instruction> = vec![];
 
-    let field_class_name = {
-        let field = compilation_context.class_loader.load(class).and_then(|c| c.field_named(field_name));
+    let (field_class_path, field_class_name, field_class_descriptor) = lookup_field_on_class(class, field_name, compilation_context)?;
 
-        let field = field.ok_or_else(|| CompileError::UnknownField {
-            class: class.to_string(),
-            field: field_name.to_string(),
-        })?;
-
-        field.class().to_string() // clone into an owned String
-    };
-
-    let field_class_name_and_descriptor = {
-        let field_class_option = compilation_context.class_loader.load(field_class_name.as_str());
-        let field_class = field_class_option.ok_or_else(|| CompileError::UnknownClass(field_class_name.clone()))?;
-        (field_class.full_name(), field_class.descriptor().to_string())
-    };
-
-    let field_class_id = wrap(compilation_context.constant_pool.add_class(&field_class_name_and_descriptor.0))?;
-    let field_ref = add_field_ref(field_name, &field_class_name_and_descriptor.1, class_id, compilation_context)?;
+    let field_class_id = wrap(compilation_context.constant_pool.add_class(&field_class_name))?;
+    let field_ref = add_field_ref(field_name, &field_class_descriptor, class_id, compilation_context)?;
     instructions.push(Instruction::Getstatic(field_ref));
 
-    let method_descriptor = {
-        let method = compilation_context
-            .class_loader
-            .load(field_class_name.as_str())
-            .and_then(|field_class| field_class.method_named(method_name))
-            .ok_or_else(|| CompileError::UnknownMethod {
-                class: field_class_name_and_descriptor.0.to_string(),
-                method: method_name.to_string(),
-            })?;
-
-        method.descriptor()
-    };
-
-    let method_id = wrap(
+    let method_descriptor = lookup_method_descriptor(field_class_path.as_str(), method_name, compilation_context)?;
+    let method_ref = wrap(
         compilation_context
             .constant_pool
-            .add_method_ref(field_class_id, method_name, method_descriptor),
+            .add_method_ref(field_class_id, method_name, method_descriptor.as_str()),
     )?;
 
     for argument in arguments {
@@ -90,10 +57,23 @@ fn from_static_field_on_class(
         }
     }
 
-    instructions.push(Instruction::Invokevirtual(method_id));
+    instructions.push(Instruction::Invokevirtual(method_ref));
     instructions.push(Instruction::Return);
 
     Ok(instructions)
+}
+
+fn lookup_method_descriptor(class_path: &str, method_name: &str, compilation_context: &mut CompilationContext) -> Result<String, CompileError> {
+    let method = compilation_context
+        .class_loader
+        .load(class_path)
+        .and_then(|field_class| field_class.method_named(method_name))
+        .ok_or_else(|| CompileError::UnknownMethod {
+            class: class_path.to_string(),
+            method: method_name.to_string(),
+        })?;
+
+    Ok(method.descriptor().to_string())
 }
 
 fn add_field_ref(field_name: &str, field_class_descriptor: &str, class_ref: u16, compilation_context: &mut CompilationContext) -> CompileResult<u16> {
@@ -115,4 +95,34 @@ fn parse_object_path<'a>(path: &'a [&'a str], class_loader: &mut ClassLoader) ->
         }
     }
     None
+}
+
+fn lookup_field_on_class(
+    class_name: &str,
+    field_name: &str,
+    compilation_context: &mut CompilationContext,
+) -> CompileResult<(String, String, String)> {
+    let field_class_path = {
+        let class = lookup_class(class_name, compilation_context)?;
+        let field = class.field_named(field_name).ok_or_else(|| CompileError::UnknownField {
+            class: class_name.to_string(),
+            field: field_name.to_string(),
+        })?;
+        field.class().to_string()
+    };
+
+    let field_class = lookup_class(field_class_path.as_str(), compilation_context)?;
+
+    Ok((
+        field_class.path().to_string(),
+        field_class.full_name(),
+        field_class.descriptor().to_string(),
+    ))
+}
+
+fn lookup_class<'a>(class_name: &str, compilation_context: &'a mut CompilationContext) -> CompileResult<&'a JavaClass> {
+    compilation_context
+        .class_loader
+        .load(class_name)
+        .ok_or_else(|| CompileError::UnknownClass(class_name.to_string()))
 }
