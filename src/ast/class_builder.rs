@@ -111,6 +111,7 @@ impl<'a> MethodBuilder<'a> {
         self.is_static = true;
     }
 
+    #[allow(dead_code)]
     pub fn as_final(&mut self) {
         self.is_final = true;
     }

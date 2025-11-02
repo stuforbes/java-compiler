@@ -16,7 +16,7 @@ use crate::io::read_file;
 #[allow(clippy::needless_lifetimes)]
 pub fn build_ast<'a>(source: &'a str) -> AstClass<'a> {
     let tokens = scanner::scan(source);
-    to_ast(source, tokens)
+    to_ast(tokens)
 }
 
 pub fn compile(source_file_path: &str) -> CompileResult<()> {

@@ -10,6 +10,7 @@ lazy_static! {
     ];
 }
 
+#[allow(dead_code)]
 pub enum ResolvedClass {
     FullyQualified(String),
     Unqualified(String),

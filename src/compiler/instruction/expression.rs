@@ -2,7 +2,7 @@ use crate::ast::expression::Expression;
 use crate::compiler::instruction::call::from_call_expression;
 use crate::compiler::instruction::string_literal::from_string_literal;
 use crate::compiler::result::CompileResult;
-use crate::compiler::{wrap, CompilationContext};
+use crate::compiler::CompilationContext;
 use ristretto_classfile::attributes::Instruction;
 
 pub fn from_expression(

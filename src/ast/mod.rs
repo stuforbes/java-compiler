@@ -17,15 +17,13 @@ where
     'src: 'token,
 {
     position: usize,
-    source: &'src str,
     tokens: &'token [Token<'src>],
 }
 
 impl<'src, 'token> AstParser<'src, 'token> {
-    fn for_tokens(source: &'src str, tokens: &'token [Token<'src>]) -> Self {
+    fn for_tokens(tokens: &'token [Token<'src>]) -> Self {
         Self {
             position: 0,
-            source,
             tokens,
         }
     }
@@ -58,8 +56,8 @@ impl<'src, 'token> AstParser<'src, 'token> {
     }
 }
 
-pub fn to_ast<'a>(source: &'a str, tokens: Vec<Token<'a>>) -> AstClass<'a> {
-    let mut parser = AstParser::for_tokens(source, &tokens);
+pub fn to_ast<'a>(tokens: Vec<Token<'a>>) -> AstClass<'a> {
+    let mut parser = AstParser::for_tokens(&tokens);
     let mut class_state_machine = class_state_machine_factory::load();
     let mut class_builder = ClassBuilder::new();
 

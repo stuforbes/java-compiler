@@ -5,6 +5,7 @@ use std::fmt::Debug;
 use std::hash::Hash;
 
 #[derive(Copy, Clone)]
+#[allow(dead_code)]
 pub enum Operation<State> {
     Ignore,
     To(State),
@@ -16,6 +17,7 @@ enum StateMachineError<State> {
     NoTransitionAvailable(State, TokenType),
 }
 
+#[allow(dead_code)]
 pub struct StateMachine<State> {
     initial_state: State,
     current_state: State,
@@ -32,6 +34,7 @@ where State: Eq + Hash + Copy + Clone + Debug {
         }
     }
 
+    #[allow(dead_code)]
     pub fn reset(&mut self) {
         self.current_state = self.initial_state
     }

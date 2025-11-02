@@ -1,10 +1,8 @@
 mod class_file_builder;
 mod instruction;
-mod instruction_builder;
 mod method_builder;
 mod resolved_class;
 mod result;
-mod symbol;
 
 use crate::ast::class::AstClass;
 use crate::compiler::class_file_builder::from;

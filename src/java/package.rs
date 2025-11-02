@@ -27,8 +27,4 @@ impl Package {
     pub fn class_named(&self, class_name: &str) -> Option<&JavaClass> {
         self.classes.get(class_name)
     }
-
-    pub fn name(&self) -> &'static str {
-        self.name
-    }
 }

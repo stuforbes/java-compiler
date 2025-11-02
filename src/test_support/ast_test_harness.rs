@@ -129,6 +129,7 @@ fn check_and_report_differences_in_parameters(
     );
 }
 
+#[allow(unreachable_patterns)]
 fn check_and_report_differences_in_statements(
     expected_statement: &Statement,
     actual_statement: &Statement,
