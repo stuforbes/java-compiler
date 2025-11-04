@@ -6,7 +6,6 @@ fn should_compile_simple_hello_world() {
 }
 
 #[test]
-#[ignore]
 fn should_compile_string_variable_assignment() {
     compile_source_and_assert_output_is("samples/StringVariableAssignment.java", "StringVariableAssignment", "a string variable");
 }

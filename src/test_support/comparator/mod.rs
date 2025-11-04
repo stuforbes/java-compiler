@@ -23,14 +23,14 @@ impl Display for ComparisonResult {
     }
 }
 
-pub fn do_comparison<A, F>(expected: &A, actual: &A, comparator: F) -> ComparisonResult
+pub fn do_comparison<A, F>(expected: &A, actual: &A, top_level_name: &str, comparator: F) -> ComparisonResult
 where A: Debug,
-    F: Fn(&A, &A, &mut Vec<String>)
+    F: Fn(&A, &A, &str, &mut Vec<String>)
 {
 
     let mut differences: Vec<String> = vec![];
 
-    comparator(expected, actual, &mut differences);
+    comparator(expected, actual, top_level_name, &mut differences);
 
     if differences.is_empty() {
         ComparisonResult::Match

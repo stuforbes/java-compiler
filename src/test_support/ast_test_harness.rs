@@ -8,48 +8,68 @@ use crate::test_support::{
     ComparisonResult,
 };
 
-pub fn build_class_from_source_file_and_compare<'a>(file_path: &str, expected_class: AstClass) {
+const CLASS_WRAPPER: &str = r"
+    public class Simple {
+        %%
+    }
+";
+
+pub fn build_class_from_source_file_and_compare(file_path: &str, expected_class: AstClass) {
     let source = read_file(file_path);
     let actual_class = build_ast(source.as_str());
 
-    let result = do_comparison(&expected_class, &actual_class, compare_classes);
+    let result = do_comparison(&expected_class, &actual_class, "Class", check_and_report_difference_in_class);
 
     assert_eq!(ComparisonResult::Match, result, "Not a match: {:}", result)
 }
 
-fn compare_classes(
+pub fn build_method_only_and_compare(content: &str, expected_method: AstMethod) {
+    let source = CLASS_WRAPPER.replace("%%", content);
+    
+    let actual_class = build_ast(source.as_str());
+    
+    assert_eq!(1, actual_class.methods().len());
+
+    let actual_first_method = &actual_class.methods().first().unwrap();
+    let result = do_comparison(&expected_method, actual_first_method, "Method", check_and_report_differences_in_methods);
+    
+    assert_eq!(ComparisonResult::Match, result, "Not a match {:}", result);
+}
+
+fn check_and_report_difference_in_class(
     expected_class: &AstClass,
     actual_class: &AstClass,
+    name: &str,
     differences: &mut Vec<String>,
 ) {
     check_and_report_difference(
         expected_class.name(),
         actual_class.name(),
-        "Name",
+        format!("{:}.name", name).as_str(),
         differences,
     );
     check_and_report_difference(
         expected_class.is_final(),
         actual_class.is_final(),
-        "Final",
+        format!("{:}.final", name).as_str(),
         differences,
     );
     check_and_report_difference(
         expected_class.is_static(),
         actual_class.is_static(),
-        "Static",
+        format!("{:}.static", name).as_str(),
         differences,
     );
     check_and_report_difference(
         expected_class.scope(),
         actual_class.scope(),
-        "Scope",
+        format!("{:}.scope", name).as_str(),
         differences,
     );
     check_and_report_difference_nested(
         expected_class.methods(),
         actual_class.methods(),
-        "Method",
+        format!("{:}.method", name).as_str(),
         differences,
         check_and_report_differences_in_methods,
     );
