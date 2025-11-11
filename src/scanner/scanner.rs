@@ -20,6 +20,7 @@ lazy_static! {
         (';', TokenType::SemiColon),
         ('.', TokenType::Dot),
         (',', TokenType::Comma),
+        ('=', TokenType::Equal),
     ].into_iter().collect();
 }
 

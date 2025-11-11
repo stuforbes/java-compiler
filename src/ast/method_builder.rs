@@ -1,12 +1,13 @@
 use crate::ast::expression::Expression;
 use crate::ast::statement::Statement;
 use crate::ast::AstParser;
+use crate::ast::class_builder::MethodBuilder;
 use crate::scanner::{Literal, Token, TokenType};
 
 pub struct AstStatementBuilder<'p, 'src, 'tokens, 'ast>
 where
     'src: 'tokens,
-    'src: 'ast
+    'src: 'ast,
 {
     parser: &'p mut AstParser<'src, 'tokens>,
     statements: Vec<Statement<'ast>>,
@@ -17,10 +18,7 @@ where
     'src: 'tokens,
 {
     pub(crate) fn new(parser: &'p mut AstParser<'src, 'tokens>) -> Self {
-        Self {
-            parser,
-            statements: vec![],
-        }
+        Self { parser, statements: vec![] }
     }
 
     pub fn build(&mut self) {
@@ -38,87 +36,94 @@ where
         self.statements.push(statement);
     }
 
-    fn expression_statement(&mut self) -> Statement<'ast>
-    {
+    fn expression_statement(&mut self) -> Statement<'ast> {
         let expression = self.expression();
         self.consume(TokenType::SemiColon);
 
         Statement::new_expression_statement(expression)
     }
 
-    fn expression(&mut self) -> Expression<'ast>
-    {
+    fn expression(&mut self) -> Expression<'ast> {
+        self.assignment()
+    }
+
+    fn assignment(&mut self) -> Expression<'ast> {
+        let mut expression = self.call();
+
+        if self.parser.is_next_token(TokenType::Identifier) {
+            expression = match expression {
+                Expression::Variable { name, type_def: None } => Expression::new_variable(self.consume(TokenType::Identifier).lexeme(), Some(name)),
+                expr  => expr
+            }
+        }
+
+        if self.parser.is_next_token(TokenType::Equal) {
+            self.consume(TokenType::Equal);
+            let value = self.expression();
+            expression = match expression {
+                Expression::Variable { name, type_def } => {
+                    Expression::new_assignment(name, type_def, value)
+                }
+                expr => {
+                    panic!("unexpected expression {:?}", expr);
+                }
+            }
+        }
+
+        return expression
+    }
+
+    fn call(&mut self) -> Expression<'ast> {
+        let mut expr = self.primary();
+
+        while true {
+            if self.parser.is_next_token(TokenType::LeftParen) {
+                self.consume(TokenType::LeftParen);
+                let mut arguments: Vec<Expression<'ast>> = vec![];
+                let mut next_token_type = self.parser.peek_next().token_type();
+                while next_token_type != TokenType::RightParen {
+                    let arg = { self.expression() };
+                    arguments.push(arg);
+                    next_token_type = self.parser.peek_next().token_type()
+                }
+                self.consume(TokenType::RightParen);
+
+                let (parent_expr, method_name) = Self::deconstruct_method_name_from(expr);
+
+                return Expression::new_call(
+                    parent_expr,
+                    method_name,
+                    arguments,
+                )
+
+            } else if self.parser.is_next_token(TokenType::Dot) {
+                self.consume(TokenType::Dot);
+
+                expr = Expression::new_child_identifier(expr, self.consume(TokenType::Identifier).lexeme())
+            } else {
+                break
+            }
+        }
+
+        expr
+    }
+
+    fn primary(&mut self) -> Expression<'ast> {
         let next_token = self.parser.peek_next();
         if next_token.token_type() == TokenType::Identifier {
-            return self.identifier_expression();
+            return Expression::new_variable(self.consume(TokenType::Identifier).lexeme(), None);
         }
         if next_token.token_type() == TokenType::String {
             return self.string_literal();
         }
 
-        todo!()
+        panic!("Unknown token {:?}", next_token);
     }
 
-    fn identifier_expression(&mut self) -> Expression<'ast>
-    {
-        self.identifier_expression_for_fully_qualified_object(
-            self.parser.position(),
-            self.parser.position(),
-        )
-    }
-
-    fn identifier_expression_for_fully_qualified_object(
-        &mut self,
-        object_path_start: usize,
-        object_path_end: usize,
-    ) -> Expression<'ast>
-    {
-        let position = self.parser.position();
-        let start_token = self.consume(TokenType::Identifier);
-
-        let next = self.parser.peek_next();
-        if next.token_type() == TokenType::LeftParen {
-            self.consume(TokenType::LeftParen);
-            self.call_expression(start_token.lexeme(), object_path_start, object_path_end)
-        } else if next.token_type() == TokenType::Dot {
-            self.consume(TokenType::Dot);
-            self.identifier_expression_for_fully_qualified_object(object_path_start, position)
-        } else {
-            panic!("Unexpected token {:?}", next.token_type())
-        }
-    }
-
-    fn call_expression(
-        &mut self,
-        method_name: &'src str,
-        object_start_position: usize,
-        object_end_position: usize,
-    ) -> Expression<'ast>
-    {
-        let mut arguments: Vec<Expression<'ast>> = vec![];
-        let mut next_token_type = self.parser.peek_next().token_type();
-        while next_token_type != TokenType::RightParen {
-            let arg = { self.expression() };
-            arguments.push(arg);
-            next_token_type = self.parser.peek_next().token_type()
-        }
-        self.consume(TokenType::RightParen);
-
-        Expression::new_call(
-            self.parser
-                .lexemes_from_position(object_start_position, object_end_position),
-            method_name,
-            arguments,
-        )
-    }
-
-    fn string_literal(&mut self) -> Expression<'ast>
-    {
+    fn string_literal(&mut self) -> Expression<'ast> {
         let token = self.consume(TokenType::String);
         match token.literal() {
-            Literal::String(value) => {
-                Expression::new_string_literal(value)
-            }
+            Literal::String(value) => Expression::new_string_literal(value),
         }
     }
 
@@ -126,11 +131,18 @@ where
         if self.parser.peek_next().token_type() == expected_type {
             self.parser.next_token()
         } else {
-            panic!(
-                "Expected {:?}, but was {:?}",
-                expected_type,
-                self.parser.peek_next().token_type()
-            )
+            panic!("Expected {:?}, but was {:?}", expected_type, self.parser.peek_next().token_type())
         }
     }
+
+    fn deconstruct_method_name_from<'a>(expression: Expression<'a>) -> (Expression<'a>, &'a str) {
+        match expression {
+            Expression::ChildIdentifier { parent, name } => (unbox(parent), name),
+            _expr => panic!("Unsupported")
+        }
+    }
+}
+
+fn unbox<T>(value: Box<T>) -> T {
+    *value
 }

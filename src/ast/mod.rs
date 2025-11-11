@@ -45,6 +45,10 @@ impl<'src, 'token> AstParser<'src, 'token> {
     fn position(&self) -> usize {
         self.position
     }
+    
+    fn is_next_token(&self, token_type: TokenType) -> bool {
+        self.peek_next().token_type() == token_type
+    }
 
     fn lexemes_from_position(&self, from: usize, to: usize) -> Vec<&'src str> {
 

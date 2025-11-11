@@ -18,6 +18,7 @@ pub enum TokenType {
     SemiColon,
     Dot,
     Comma,
+    Equal,
 
     // Literals
     Identifier,

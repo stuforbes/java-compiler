@@ -11,11 +11,18 @@ pub fn from_expression(
 ) -> CompileResult<Vec<Instruction>> {
     match expression {
         Expression::Call {
-            object_path,
+            target,
             method_name,
             arguments,
-        } => from_call_expression(object_path, method_name, arguments, compilation_context),
+        } => from_call_expression(unbox(target), method_name, arguments, compilation_context),
         Expression::StringLiteral { value } => from_string_literal(value, compilation_context),
+        Expression::ChildIdentifier { parent, name } => todo!("Not supported"),
+        Expression::Variable { name, type_def } => todo!("Not supported"),
+        Expression::Assignment { name, type_def, value } => todo!("Not supported"),
     }
+}
+
+fn unbox<T>(value: &Box<T>) -> &T {
+    &**value
 }
 

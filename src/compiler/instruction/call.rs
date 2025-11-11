@@ -6,24 +6,48 @@ use crate::java::ClassLoader;
 use ristretto_classfile::attributes::Instruction;
 
 pub fn from_call_expression(
-    object_path: &[&str],
+    target: &Expression,
     method_name: &str,
     arguments: &Vec<Expression>,
     compilation_context: &mut CompilationContext,
 ) -> CompileResult<Vec<Instruction>> {
-    if let Some((class_path, suffix)) = parse_object_path(object_path, &mut compilation_context.class_loader) {
+    let mut object_path = String::new();
+    extract_object_path(target, &mut object_path);
+
+    if let Some((class_path, suffix)) = parse_object_path(object_path.as_str(), &mut compilation_context.class_loader) {
         let class_descriptor = class_path.replace('.', "/");
         let class_id = wrap(compilation_context.constant_pool.add_class(&class_descriptor))?;
 
         if suffix.is_empty() {
             todo!("Static methods on classes not yet supported")
         } else if suffix.len() == 1 {
-            return from_static_field_on_class(class_path, class_id, suffix[0], method_name, arguments, compilation_context);
+            return from_static_field_on_class(class_path, class_id, suffix.first().unwrap(), method_name, arguments, compilation_context);
         } else {
             todo!("Multiple nested static fields not yet supported")
         }
     } else {
-        Err(CompileError::UnknownClass(object_path.join(".")))
+        Err(CompileError::UnknownClass(object_path))
+    }
+}
+
+fn extract_object_path(expression: &Expression, result: &mut String) {
+    match expression {
+        Expression::Call { .. } => todo!(),
+        Expression::StringLiteral { .. } => todo!("Not yet supported"),
+        Expression::Variable { name, type_def } => result.push_str(name),
+        Expression::ChildIdentifier { parent, name } => {
+            extract_object_path(parent, result);
+            result.push('.');
+            result.push_str(name);
+        }
+        Expression::Assignment { .. } => panic!("Cannot convert assignment to path. Perhaps assignment should be a statement?")
+    }
+}
+
+fn extract_method_name<'a>(expression: &'a Expression) -> &'a str {
+    match expression {
+        Expression::ChildIdentifier { name, parent } => name,
+        expr => panic!("Unsupported")
     }
 }
 
@@ -86,14 +110,24 @@ fn add_field_ref(field_name: &str, field_class_descriptor: &str, class_ref: u16,
     Ok(field_ref)
 }
 
-fn parse_object_path<'a>(path: &'a [&'a str], class_loader: &mut ClassLoader) -> Option<(&'a str, &'a [&'a str])> {
-    for i in (1..=path.len()).rev() {
-        let (prefix, suffix) = path.split_at(i);
+fn parse_object_path<'a>(path: &'a str, class_loader: &mut ClassLoader) -> Option<(&'a str, Vec<&'a str>)> {
+    let mut end = path.len();
 
-        if let Some(class) = class_loader.load(prefix.join(".").as_str()) {
-            return Some((class.path(), suffix));
+    let mut split_idx = path[0..end].rfind('.');
+
+    while split_idx.is_some() {
+
+        let (prefix, suffix) = path.split_at(split_idx?);
+
+        if let Some(class) = class_loader.load(prefix) {
+            let suffix_parts: Vec<&str> = suffix[1..].split('.').collect();
+            return Some((class.path(), suffix_parts));
         }
+
+        end = split_idx?;
+        split_idx = path[0..end].rfind('.');
     }
+
     None
 }
 

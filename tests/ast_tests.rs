@@ -20,7 +20,7 @@ fn should_build_simple_ast() {
                 "void",
                 vec![AstParameter::new("args", "String", false)],
                 vec![Statement::new_expression_statement(Expression::new_call(
-                    vec!["System", "out"],
+                    Expression::new_child_identifier(Expression::new_variable("System", None), "out"),
                     "println",
                     vec![Expression::new_string_literal("Hello World")],
                 ))],
@@ -46,11 +46,11 @@ fn should_build_method_with_string_variable_assignment() {
             "void",
             vec![AstParameter::new("args", "String", false)],
             vec![
-                Statement::new_var_assignment("message", "String", false, Some(Expression::new_string_literal("hello"))),
+                Statement::new_expression_statement(Expression::new_assignment("message", Some("String"), Expression::new_string_literal("hello"))),
                 Statement::new_expression_statement(Expression::new_call(
-                    vec!["System", "out"],
+                    Expression::new_child_identifier(Expression::new_variable("System", None), "out"),
                     "println",
-                    vec![Expression::new_string_literal("Hello World")],
+                    vec![Expression::new_variable("message", None)],
                 )),
             ],
         ),
