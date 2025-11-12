@@ -34,7 +34,7 @@ fn extract_object_path(expression: &Expression, result: &mut String) {
     match expression {
         Expression::Call { .. } => todo!(),
         Expression::StringLiteral { .. } => todo!("Not yet supported"),
-        Expression::Variable { name, type_def } => result.push_str(name),
+        Expression::Variable { name, type_def: _type_def } => result.push_str(name),
         Expression::ChildIdentifier { parent, name } => {
             extract_object_path(parent, result);
             result.push('.');
@@ -46,8 +46,8 @@ fn extract_object_path(expression: &Expression, result: &mut String) {
 
 fn extract_method_name<'a>(expression: &'a Expression) -> &'a str {
     match expression {
-        Expression::ChildIdentifier { name, parent } => name,
-        expr => panic!("Unsupported")
+        Expression::ChildIdentifier { name, parent: _parent } => name,
+        _expr => panic!("Unsupported")
     }
 }
 

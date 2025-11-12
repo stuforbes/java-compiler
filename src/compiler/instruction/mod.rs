@@ -13,6 +13,6 @@ pub fn from(statement: &Statement, compilation_context: &mut CompilationContext)
     match statement {
         Statement::Expression { expression } => from_expression(expression, compilation_context),
         Statement::VariableAssignment { name, var_type, is_final, value } =>
-            from_variable_assignment(name, var_type, *is_final, value)
+            from_variable_assignment(name, *var_type, *is_final, value)
     }
 }

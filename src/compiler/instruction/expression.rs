@@ -16,9 +16,9 @@ pub fn from_expression(
             arguments,
         } => from_call_expression(unbox(target), method_name, arguments, compilation_context),
         Expression::StringLiteral { value } => from_string_literal(value, compilation_context),
-        Expression::ChildIdentifier { parent, name } => todo!("Not supported"),
-        Expression::Variable { name, type_def } => todo!("Not supported"),
-        Expression::Assignment { name, type_def, value } => todo!("Not supported"),
+        Expression::ChildIdentifier { .. } => todo!("Not supported"),
+        Expression::Variable { .. } => todo!("Not supported"),
+        Expression::Assignment { .. } => todo!("Not supported"),
     }
 }
 

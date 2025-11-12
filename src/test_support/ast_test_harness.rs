@@ -1,4 +1,3 @@
-use std::fmt::format;
 use crate::ast::class::{AstClass, AstMethod, AstParameter};
 use crate::ast::expression::Expression;
 use crate::ast::statement::Statement;
@@ -180,7 +179,7 @@ fn check_and_report_differences_in_expressions(
                 &expected_method_name,
                 &actual_method_name,
                 format!("{:}.method_name", name).as_str(),
-                differences
+                differences,
             );
             check_and_report_difference_nested(
                 &expected_arguments,

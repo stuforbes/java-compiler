@@ -11,17 +11,16 @@ pub mod expression;
 mod method_builder;
 mod state_machine;
 pub mod statement;
+mod statement_structure;
 
-struct AstParser<'src, 'token>
-where
-    'src: 'token,
+struct AstParser<'src>
 {
     position: usize,
-    tokens: &'token [Token<'src>],
+    tokens: Vec<Token<'src>>,
 }
 
-impl<'src, 'token> AstParser<'src, 'token> {
-    fn for_tokens(tokens: &'token [Token<'src>]) -> Self {
+impl<'src> AstParser<'src> {
+    fn for_tokens(tokens: Vec<Token<'src>>) -> Self {
         Self {
             position: 0,
             tokens,
@@ -45,7 +44,7 @@ impl<'src, 'token> AstParser<'src, 'token> {
     fn position(&self) -> usize {
         self.position
     }
-    
+
     fn is_next_token(&self, token_type: TokenType) -> bool {
         self.peek_next().token_type() == token_type
     }
@@ -61,7 +60,7 @@ impl<'src, 'token> AstParser<'src, 'token> {
 }
 
 pub fn to_ast<'a>(tokens: Vec<Token<'a>>) -> AstClass<'a> {
-    let mut parser = AstParser::for_tokens(&tokens);
+    let mut parser = AstParser::for_tokens(tokens);
     let mut class_state_machine = class_state_machine_factory::load();
     let mut class_builder = ClassBuilder::new();
 

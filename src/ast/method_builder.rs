@@ -1,24 +1,28 @@
 use crate::ast::expression::Expression;
 use crate::ast::statement::Statement;
 use crate::ast::AstParser;
-use crate::ast::class_builder::MethodBuilder;
+use crate::ast::statement_structure::{new_foo, Foo};
 use crate::scanner::{Literal, Token, TokenType};
 
-pub struct AstStatementBuilder<'p, 'src, 'tokens, 'ast>
+pub struct AstStatementBuilder<'p, 'src, 'ast>
 where
-    'src: 'tokens,
     'src: 'ast,
 {
-    parser: &'p mut AstParser<'src, 'tokens>,
+    parser: &'p mut AstParser<'src>,
+    foo: Foo,
     statements: Vec<Statement<'ast>>,
 }
 
-impl<'p, 'src, 'tokens, 'ast> AstStatementBuilder<'p, 'src, 'tokens, 'ast>
+impl<'p, 'src, 'tokens, 'ast> AstStatementBuilder<'p, 'src, 'ast>
 where
     'src: 'tokens,
 {
-    pub(crate) fn new(parser: &'p mut AstParser<'src, 'tokens>) -> Self {
-        Self { parser, statements: vec![] }
+    pub(crate) fn new(parser: &'p mut AstParser<'src>) -> Self {
+        Self {
+            parser,
+            foo: new_foo(),
+            statements: vec![]
+        }
     }
 
     pub fn build(&mut self) {
@@ -32,8 +36,11 @@ where
     }
 
     fn next_statement(&mut self) {
-        let statement = self.expression_statement();
-        self.statements.push(statement);
+        if let Some(statement) = self.foo.find_next_statement(self.parser) {
+            self.statements.push(statement);
+        }
+        // let statement = self.expression_statement();
+        // self.statements.push(statement);
     }
 
     fn expression_statement(&mut self) -> Statement<'ast> {
@@ -53,7 +60,7 @@ where
         if self.parser.is_next_token(TokenType::Identifier) {
             expression = match expression {
                 Expression::Variable { name, type_def: None } => Expression::new_variable(self.consume(TokenType::Identifier).lexeme(), Some(name)),
-                expr  => expr
+                expr => expr,
             }
         }
 
@@ -61,16 +68,14 @@ where
             self.consume(TokenType::Equal);
             let value = self.expression();
             expression = match expression {
-                Expression::Variable { name, type_def } => {
-                    Expression::new_assignment(name, type_def, value)
-                }
+                Expression::Variable { name, type_def } => Expression::new_assignment(name, type_def, value),
                 expr => {
                     panic!("unexpected expression {:?}", expr);
                 }
             }
         }
 
-        return expression
+        return expression;
     }
 
     fn call(&mut self) -> Expression<'ast> {
@@ -90,18 +95,13 @@ where
 
                 let (parent_expr, method_name) = Self::deconstruct_method_name_from(expr);
 
-                return Expression::new_call(
-                    parent_expr,
-                    method_name,
-                    arguments,
-                )
-
+                return Expression::new_call(parent_expr, method_name, arguments);
             } else if self.parser.is_next_token(TokenType::Dot) {
                 self.consume(TokenType::Dot);
 
                 expr = Expression::new_child_identifier(expr, self.consume(TokenType::Identifier).lexeme())
             } else {
-                break
+                break;
             }
         }
 
@@ -138,7 +138,7 @@ where
     fn deconstruct_method_name_from<'a>(expression: Expression<'a>) -> (Expression<'a>, &'a str) {
         match expression {
             Expression::ChildIdentifier { parent, name } => (unbox(parent), name),
-            _expr => panic!("Unsupported")
+            _expr => panic!("Unsupported"),
         }
     }
 }
