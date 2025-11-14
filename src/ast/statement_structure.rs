@@ -93,6 +93,7 @@ impl <'ast> Foo {
         'src: 'token,
         'token: 'ast,
     {
+        parser.auto_commit(false);
         let candidates: &mut Vec<StatementStructure> = &mut self.statement_structures.clone();
         let mut tokens: Vec<Token<'token>> = vec![];
 
@@ -110,6 +111,10 @@ impl <'ast> Foo {
             }
         }
 
+        parser.auto_commit(true);
+
+        // ensure we haven't consumed any tokens in this failed attempt
+        parser.rollback();
         None
     }
 
