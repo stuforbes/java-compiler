@@ -14,6 +14,7 @@ mod state_machine;
 pub mod statement;
 mod statement_structure;
 mod parser;
+mod expression_structure;
 
 pub fn to_ast<'a>(tokens: Vec<Token<'a>>) -> AstClass<'a> {
     let mut parser = AstParser::for_tokens(tokens);

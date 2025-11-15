@@ -70,7 +70,7 @@ impl<'src> AstParser<'src> {
     }
 
     fn ensure_auto_commit_disabled(&mut self) {
-        if !self.auto_commit {
+        if self.auto_commit {
             panic!("Auto commit is enabled")
         }
     }

@@ -11,12 +11,13 @@ pub fn from_expression(
 ) -> CompileResult<Vec<Instruction>> {
     match expression {
         Expression::Call {
-            target,
             method_name,
             arguments,
-        } => from_call_expression(unbox(target), method_name, arguments, compilation_context),
+        } => from_call_expression(method_name, arguments, compilation_context),
         Expression::StringLiteral { value } => from_string_literal(value, compilation_context),
+        Expression::StaticIdentifier { name } => todo!("Not supported"),
         Expression::ChildIdentifier { .. } => todo!("Not supported"),
+        Expression::ObjectExpression { .. } => todo!("Not supported"),
         Expression::Variable { .. } => todo!("Not supported"),
         Expression::Assignment { .. } => todo!("Not supported"),
     }

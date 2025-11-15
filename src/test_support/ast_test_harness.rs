@@ -164,17 +164,14 @@ fn check_and_report_differences_in_expressions(
     match (expected_expression, actual_expression) {
         (
             Expression::Call {
-                target: expected_target,
                 method_name: expected_method_name,
                 arguments: expected_arguments,
             },
             Expression::Call {
-                target: actual_target,
                 method_name: actual_method_name,
                 arguments: actual_arguments,
             },
         ) => {
-            check_and_report_differences_in_expressions(expected_target, actual_target, format!("{:}.target", name).as_str(), differences);
             check_and_report_difference(
                 &expected_method_name,
                 &actual_method_name,
@@ -236,8 +233,27 @@ fn check_and_report_differences_in_expressions(
             check_and_report_difference(expected_type_def, actual_type_def, format!("{:}.type_def", name).as_str(), differences);
             check_and_report_differences_in_expressions(expected_value, actual_value, format!("{:}.value", name).as_str(), differences);
         }
-        (unknown_expected, unknown_actual) => {
-            differences.push(format!("{:} is different. Expected {:?} but was {:?}", name, unknown_expected, unknown_actual).to_string())
+        (
+            Expression::ObjectExpression {
+                parent: expected_parent,
+                child: expected_child,
+            },
+            Expression::ObjectExpression {
+                parent: actual_parent,
+                child: actual_child
+            }
+        ) => {
+            check_and_report_differences_in_expressions(expected_parent, actual_parent, format!("{:}.parent", name).as_str(), differences);
+            check_and_report_differences_in_expressions(expected_child, actual_child, format!("{:}.child", name).as_str(), differences);
+        },
+        (
+            Expression::StaticIdentifier { name: expected_name },
+            Expression::StaticIdentifier { name: actual_name },
+        ) => {
+            check_and_report_difference(expected_name, actual_name, format!("{:}.name", name).as_str(), differences);  
+        },
+            (unknown_expected, unknown_actual) => {
+        differences.push(format ! ("Unsure how to compare {:}. Expected {:?} but was {:?}", name, unknown_expected, unknown_actual).to_string())
         }
     }
 }
