@@ -4,6 +4,7 @@ use crate::ast::statement::Statement;
 use crate::build_ast;
 use crate::io::read_file;
 use crate::test_support::{check_and_report_difference, check_and_report_difference_nested, do_comparison, ComparisonResult};
+use crate::test_support::comparator::check_and_report_difference_option;
 
 const CLASS_WRAPPER: &str = r"
     public class Simple {
@@ -151,6 +152,25 @@ fn check_and_report_differences_in_statements(
             format!("{:}.expression", name).as_str(),
             differences,
         ),
+        (
+            Statement::VariableAssignment {
+                name: expected_name,
+                var_type: expected_var_type,
+                is_final: expected_is_final,
+                value: expected_value,
+            },
+            Statement::VariableAssignment {
+                name: actual_name,
+                var_type: actual_var_type,
+                is_final: actual_is_final,
+                value: actual_value,
+            },
+        ) => {
+            check_and_report_difference(expected_name, actual_name, format!("{:}.name", name).as_str(), differences);
+            check_and_report_difference(expected_var_type, actual_var_type, format!("{:}.var_type", name).as_str(), differences);
+            check_and_report_difference(expected_is_final, actual_is_final, format!("{:}.is_final", name).as_str(), differences);
+            check_and_report_difference_option(expected_value, actual_value, format!("{:}.value", name).as_str(), differences, check_and_report_differences_in_expressions);
+        }
         (expected, actual) => differences.push(format!("{:} is different. Expected {:?} but was {:?}", name, expected, actual).to_string()),
     }
 }
@@ -240,20 +260,21 @@ fn check_and_report_differences_in_expressions(
             },
             Expression::ObjectExpression {
                 parent: actual_parent,
-                child: actual_child
-            }
+                child: actual_child,
+            },
         ) => {
             check_and_report_differences_in_expressions(expected_parent, actual_parent, format!("{:}.parent", name).as_str(), differences);
             check_and_report_differences_in_expressions(expected_child, actual_child, format!("{:}.child", name).as_str(), differences);
-        },
-        (
-            Expression::StaticIdentifier { name: expected_name },
-            Expression::StaticIdentifier { name: actual_name },
-        ) => {
-            check_and_report_difference(expected_name, actual_name, format!("{:}.name", name).as_str(), differences);  
-        },
-            (unknown_expected, unknown_actual) => {
-        differences.push(format ! ("Unsure how to compare {:}. Expected {:?} but was {:?}", name, unknown_expected, unknown_actual).to_string())
         }
+        (Expression::StaticIdentifier { name: expected_name }, Expression::StaticIdentifier { name: actual_name }) => {
+            check_and_report_difference(expected_name, actual_name, format!("{:}.name", name).as_str(), differences);
+        }
+        (unknown_expected, unknown_actual) => differences.push(
+            format!(
+                "Unsure how to compare {:}. Expected {:?} but was {:?}",
+                name, unknown_expected, unknown_actual
+            )
+            .to_string(),
+        ),
     }
 }

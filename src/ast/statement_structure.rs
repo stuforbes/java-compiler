@@ -59,7 +59,20 @@ impl StatementBuilder {
         'src: 'ast,
     {
         match self {
-            StatementBuilder::Assignment => None,
+            StatementBuilder::Assignment => {
+                let mut name = consume_next_token_if_type(TokenType::Identifier, parser)?;
+                let mut type_def = None;
+                if parser.is_next_token(TokenType::Identifier) {
+                    type_def = Some(name.lexeme());
+                    name = consume_next_token_if_type(TokenType::Identifier, parser)?;
+                }
+
+                consume_next_token_if_type(TokenType::Equal, parser)?;
+
+                let statement = Statement::new_var_assignment(name.lexeme(), type_def, false, find_next_expression(parser));
+                consume_next_token_if_type(TokenType::SemiColon, parser)?;
+                Some(statement)
+            },
             StatementBuilder::Expression => {
                 let statement = find_next_expression(parser).map(|expression| Statement::new_expression_statement(expression));
                 if statement.is_some() {

@@ -65,3 +65,22 @@ where A: Debug,
         }
     }
 }
+
+pub fn check_and_report_difference_option<A, F>(
+    expected_option: &Option<A>,
+    actual_option: &Option<A>,
+    name: &str,
+    differences: &mut Vec<String>,
+    value_comparator: F,
+)
+where A: Debug + Clone,
+      F: Fn(&A, &A, &str, &mut Vec<String>),
+{
+    if expected_option.is_some() && actual_option.is_none() {
+        differences.push(format!("{:?}: Expected {:?} but was missing", name, &expected_option.clone().unwrap()))
+    } else if expected_option.is_none() && actual_option.is_some() {
+        differences.push(format!("{:?}: Expected empty but was {:?}", name, &actual_option.clone().unwrap()))
+    } else if expected_option.is_some() && actual_option.is_some() {
+        value_comparator(&expected_option.clone().unwrap(), &actual_option.clone().unwrap(), name, differences);
+    }
+}

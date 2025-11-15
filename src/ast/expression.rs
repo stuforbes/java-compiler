@@ -1,6 +1,6 @@
 use std::fmt::Debug;
 
-#[derive(PartialEq, Debug)]
+#[derive(PartialEq, Debug, Clone)]
 pub enum Expression<'ast> {
     Call {
         method_name: &'ast str,

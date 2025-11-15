@@ -48,12 +48,12 @@ fn should_build_method_with_string_variable_assignment() {
             "void",
             vec![AstParameter::new("args", "String", false)],
             vec![
-                Statement::new_expression_statement(
-                    Expression::new_assignment(
+                Statement::new_var_assignment(
                     "message",
                     Some("String"),
-                    Expression::new_string_literal("hello"),
-                )),
+                    false,
+                    Some(Expression::new_string_literal("hello"))
+                ),
                 Statement::new_expression_statement(
                     Expression::new_object_expression(
                     Expression::new_static_identifier("System"),
@@ -61,7 +61,7 @@ fn should_build_method_with_string_variable_assignment() {
                         Expression::new_static_identifier("out"),
                         Expression::new_call(
                             "println",
-                            vec![Expression::new_variable("message", None)],
+                            vec![Expression::new_static_identifier("message")],
                         )
                         )
                     )
