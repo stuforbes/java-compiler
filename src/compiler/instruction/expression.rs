@@ -4,11 +4,24 @@ use crate::compiler::instruction::string_literal::from_string_literal;
 use crate::compiler::result::CompileResult;
 use crate::compiler::CompilationContext;
 use ristretto_classfile::attributes::Instruction;
+use crate::compiler::instruction::object_expression::from_object_expression;
 
 pub fn from_expression(
     expression: &Expression,
     compilation_context: &mut CompilationContext,
 ) -> CompileResult<Vec<Instruction>> {
+
+    // e.g. objectexpression {
+    //          parent = staticidentifier { System },
+    //          child = objectexpression {
+    //              parent = staticidentifier { out },
+    //              child = call {
+    //                  methodname = "println"
+    //                  args = ...
+    //
+
+    // Need to maintain current object depth
+
     match expression {
         Expression::Call {
             method_name,
@@ -17,7 +30,7 @@ pub fn from_expression(
         Expression::StringLiteral { value } => from_string_literal(value, compilation_context),
         Expression::StaticIdentifier { name } => todo!("Not supported"),
         Expression::ChildIdentifier { .. } => todo!("Not supported"),
-        Expression::ObjectExpression { .. } => todo!("Not supported"),
+        Expression::ObjectExpression { parent, child } => from_object_expression(parent, child, compilation_context),
         Expression::Variable { .. } => todo!("Not supported"),
         Expression::Assignment { .. } => todo!("Not supported"),
     }
