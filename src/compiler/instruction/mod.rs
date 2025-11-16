@@ -3,6 +3,7 @@ mod call;
 mod string_literal;
 mod variable_assignment;
 mod object_expression;
+mod static_identifier;
 
 use ristretto_classfile::attributes::Instruction;
 use crate::ast::statement::Statement;

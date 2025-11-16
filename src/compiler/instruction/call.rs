@@ -10,11 +10,10 @@ pub fn from_call_expression(
     arguments: &Vec<Expression>,
     compilation_context: &mut CompilationContext,
 ) -> CompileResult<Vec<Instruction>> {
-    todo!("Needs re-implementing now that call doesn't take object path")
     // let mut object_path = String::new();
-    // extract_object_path(target, &mut object_path);
+    extract_object_path(target, &mut object_path);
     //
-    // if let Some((class_path, suffix)) = parse_object_path(object_path.as_str(), &mut compilation_context.class_loader) {
+    if let Some((class_path, suffix)) = parse_object_path(object_path.as_str(), &mut compilation_context.class_loader) {
     //     let class_descriptor = class_path.replace('.', "/");
     //     let class_id = wrap(compilation_context.constant_pool.add_class(&class_descriptor))?;
     //
@@ -27,22 +26,24 @@ pub fn from_call_expression(
     //     }
     // } else {
     //     Err(CompileError::UnknownClass(object_path))
-    // }
+    }
+
+    todo!("Needs re-implementing now that call doesn't take object path")
 }
 
-// fn extract_object_path(expression: &Expression, result: &mut String) {
-//     match expression {
-//         Expression::Call { .. } => todo!(),
-//         Expression::StringLiteral { .. } => todo!("Not yet supported"),
-//         Expression::Variable { name, type_def: _type_def } => result.push_str(name),
-//         Expression::ChildIdentifier { parent, name } => {
-//             extract_object_path(parent, result);
-//             result.push('.');
-//             result.push_str(name);
-//         }
-//         Expression::Assignment { .. } => panic!("Cannot convert assignment to path. Perhaps assignment should be a statement?")
-//     }
-// }
+fn extract_object_path(expression: &Expression, result: &mut String) {
+    match expression {
+        Expression::Call { .. } => todo!(),
+        Expression::StringLiteral { .. } => todo!("Not yet supported"),
+        Expression::Variable { name, type_def: _type_def } => result.push_str(name),
+        Expression::ChildIdentifier { parent, name } => {
+            extract_object_path(parent, result);
+            result.push('.');
+            result.push_str(name);
+        }
+        Expression::Assignment { .. } => panic!("Cannot convert assignment to path. Perhaps assignment should be a statement?")
+    }
+}
 
 fn extract_method_name<'a>(expression: &'a Expression) -> &'a str {
     match expression {
