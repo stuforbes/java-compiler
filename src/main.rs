@@ -1,4 +1,5 @@
 use java_compiler::{compile, spike};
+use java_compiler::tools::counting_allocator::counting_allocator;
 
 mod io;
 
@@ -6,6 +7,7 @@ mod io;
 fn main_spike() {
     spike::compile("Simple2")
 }
+
 
 fn main() {
     let result = compile("samples/Simple.java");
@@ -18,4 +20,6 @@ fn main() {
             println!("There was an error compiling {:?}", e);
         }
     }
+
+    println!("Allocations: {:}", counting_allocator());
 }

@@ -5,6 +5,7 @@ pub mod ast;
 pub mod test_support;
 pub mod compiler;
 pub mod java;
+pub mod tools;
 
 use std::fs;
 use ristretto_classfile::ClassFile;
