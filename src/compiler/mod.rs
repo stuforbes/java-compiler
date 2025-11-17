@@ -9,17 +9,16 @@ use crate::compiler::class_file_builder::from;
 pub use crate::compiler::result::{wrap, CompileError, CompileResult};
 use ristretto_classfile::{ClassFile, ConstantPool};
 use crate::java::{new_class_loader, ClassLoader};
-use crate::java::class::JavaClass;
 
-pub struct CompilationContext<'compiler> {
+pub struct CompilationContext {
     constant_pool: ConstantPool,
     class_loader: ClassLoader,
-    scoped_object: Option<ObjectReference<'compiler>>,
+    scoped_object: Option<ObjectReference>,
 }
 
-impl <'compiler> CompilationContext<'compiler> {
-    pub fn push_scoped_object(&mut self, class: &'compiler JavaClass, class_id: u16) {
-        self.scoped_object = Some(ObjectReference{ class, class_id })
+impl CompilationContext {
+    pub fn push_scoped_object(&mut self, class_path: String, class_id: u16) {
+        self.scoped_object = Some(ObjectReference{ class_path, class_id })
     }
 }
 
@@ -35,7 +34,8 @@ pub fn compile(class: &AstClass) -> CompileResult<ClassFile> {
     from(class, &mut compilation_context)
 }
 
-struct ObjectReference<'compiler> {
-    class: &'compiler JavaClass,
+struct ObjectReference {
+    // todo: can we use a reference instead?
+    class_path: String,
     class_id: u16,
 }
