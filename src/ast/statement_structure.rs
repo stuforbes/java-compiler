@@ -5,31 +5,6 @@ use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
 use crate::scanner::TokenType;
 
-#[derive(Clone)]
-pub enum Modifier {
-    Between { from: u8, to: u8 },
-    Multiple,
-    Two,
-}
-
-impl Modifier {
-    pub(crate) fn is_complete(&self, number_of_matches: u8) -> bool {
-        match self {
-            Modifier::Between { from: _from, to } => &number_of_matches == to,
-            Modifier::Multiple => false,
-            Modifier::Two => number_of_matches == 2,
-        }
-    }
-
-    pub(crate) fn is_finite(&self) -> bool {
-        match self {
-            Modifier::Between { .. } => true,
-            Modifier::Multiple => false,
-            Modifier::Two => true,
-        }
-    }
-}
-
 #[derive(Clone, EnumIter)]
 enum StatementBuilder {
     Assignment,
@@ -99,8 +74,8 @@ where
             parser.auto_commit(true);
             return result;
         } else {
-            todo!("Something went wrong. Seek to the end of the statement and error");
             parser.rollback();
+            todo!("Something went wrong. Seek to the end of the statement and error");
         }
     }
 

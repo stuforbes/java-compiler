@@ -57,18 +57,6 @@ impl<'src> AstParser<'src> {
         self.peek_next().token_type() == token_type
     }
 
-    fn position(&self) -> usize {
-        self.position
-    }
-
-    fn lexemes_from_position(&self, from: usize, to: usize) -> Vec<&'src str> {
-        self.tokens[from..=to]
-            .iter()
-            .filter(|t| t.token_type() != TokenType::Dot)
-            .map(|t| t.lexeme())
-            .collect()
-    }
-
     fn ensure_auto_commit_disabled(&mut self) {
         if self.auto_commit {
             panic!("Auto commit is enabled")
