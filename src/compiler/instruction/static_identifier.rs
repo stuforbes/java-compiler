@@ -6,6 +6,9 @@ pub fn from_static_identifier(name: &str, compilation_context: &mut CompilationC
     let mut instructions: Vec<Instruction> = vec![];
 
     if compilation_context.scoped_object.is_none() {
+        if compilation_context.stack.contains(name) { 
+            instructions.push(Instruction::Aload(compilation_context.stack.get(name)))
+        }
         let class_path = if let Some(class) = compilation_context.class_loader.load(name) {
             let class_descriptor = class.path().replace('.', "/");
             let class_id = wrap(compilation_context.constant_pool.add_class(&class_descriptor))?;

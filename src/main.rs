@@ -10,8 +10,9 @@ fn main_spike() {
 
 
 fn main() {
-    let result = compile("samples/Simple.java");
-    
+    // let result = compile("samples/Simple.java");
+    let result = compile("samples/StringVariableAssignment.java");
+
     match result {
         Ok(_) => {
             println!("File written successfully")

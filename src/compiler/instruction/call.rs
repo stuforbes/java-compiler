@@ -25,12 +25,14 @@ pub fn from_call_expression(
             .add_method_ref(class_id, method_name, method_descriptor.as_str()),
     )?;
 
+    compilation_context.clear_scoped_object();
     for argument in arguments {
         let argument_instructions = from_expression(argument, compilation_context)?;
         for argument_instruction in argument_instructions {
             instructions.push(argument_instruction);
         }
     }
+    compilation_context.push_scoped_object(class_path, class_id);
 
     instructions.push(Instruction::Invokevirtual(method_ref));
     instructions.push(Instruction::Return);

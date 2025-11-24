@@ -3,22 +3,29 @@ mod instruction;
 mod method_builder;
 mod resolved_class;
 mod result;
+mod state_stack;
 
 use crate::ast::class::AstClass;
 use crate::compiler::class_file_builder::from;
 pub use crate::compiler::result::{wrap, CompileError, CompileResult};
 use ristretto_classfile::{ClassFile, ConstantPool};
+use crate::compiler::state_stack::StateStack;
 use crate::java::{new_class_loader, ClassLoader};
 
 pub struct CompilationContext {
     constant_pool: ConstantPool,
     class_loader: ClassLoader,
     scoped_object: Option<ObjectReference>,
+    stack: StateStack
 }
 
 impl CompilationContext {
     pub fn push_scoped_object(&mut self, class_path: String, class_id: u16) {
         self.scoped_object = Some(ObjectReference{ class_path, class_id })
+    }
+
+    pub fn clear_scoped_object(&mut self) {
+        self.scoped_object = None;
     }
 
     pub fn scoped_class_path(&self) -> Option<String> {
@@ -41,6 +48,7 @@ pub fn compile(class: &AstClass) -> CompileResult<ClassFile> {
         constant_pool,
         class_loader: packages,
         scoped_object: None,
+        stack: StateStack::new()
     };
 
     from(class, &mut compilation_context)

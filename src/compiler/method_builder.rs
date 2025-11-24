@@ -21,7 +21,16 @@ pub fn from(
 
     let main_method_code = wrap(compilation_context.constant_pool.add_utf8("Code"))?;
 
+    compilation_context.stack.new_layer();
     let instructions: Vec<Instruction> = build_instructions(ast_method, compilation_context)?;
+
+    // TODO: This will break when methods have inner stack layers
+    let num_fields_in_stack = compilation_context.stack.count();
+
+    compilation_context.stack.drop_layer();
+
+    // TODO: multiple method arguments. Currently, only main() is supported, with `args` parameter
+    let num_method_arguments: u16 = 1;
 
     Ok(Method {
         access_flags: method_access_flags,
@@ -30,7 +39,7 @@ pub fn from(
         attributes: vec![Code {
             name_index: main_method_code,
             max_stack: 2, // need space for println parameters
-            max_locals: 1, // args[]
+            max_locals: num_method_arguments + num_fields_in_stack,
             code: instructions,
             exception_table: vec![],
             attributes: vec![],
@@ -46,6 +55,8 @@ fn build_instructions(method: &AstMethod, compilation_context: &mut CompilationC
         for statement_instruction in statement_instructions {
             instructions.push(statement_instruction);
         }
+
+        compilation_context.clear_scoped_object();
     }
 
     println!("{:?}", instructions);
