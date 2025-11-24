@@ -4,8 +4,10 @@ use crate::compiler::{wrap, CompilationContext, CompileResult};
 pub fn from_string_literal(
     value: &str,
     compilation_context: &mut CompilationContext,
-) -> CompileResult<Vec<Instruction>> {
+    instructions: &mut Vec<Instruction>
+) -> CompileResult<()> {
     let index = wrap(compilation_context.constant_pool.add_string(value))?;
 
-    Ok(vec![Instruction::Ldc_w(index)])
+    instructions.push(Instruction::Ldc_w(index));
+    Ok(())
 }

@@ -2,11 +2,9 @@ use crate::compiler::{wrap, CompilationContext, CompileError, CompileResult};
 use crate::java::class::JavaClass;
 use ristretto_classfile::attributes::Instruction;
 
-pub fn from_static_identifier(name: &str, compilation_context: &mut CompilationContext) -> CompileResult<Vec<Instruction>> {
-    let mut instructions: Vec<Instruction> = vec![];
-
+pub fn from_static_identifier(name: &str, compilation_context: &mut CompilationContext, instructions: &mut Vec<Instruction>) -> CompileResult<()> {
     if compilation_context.scoped_object.is_none() {
-        if compilation_context.stack.contains(name) { 
+        if compilation_context.stack.contains(name) {
             instructions.push(Instruction::Aload(compilation_context.stack.get(name)))
         }
         let class_path = if let Some(class) = compilation_context.class_loader.load(name) {
@@ -29,7 +27,7 @@ pub fn from_static_identifier(name: &str, compilation_context: &mut CompilationC
 
         compilation_context.push_scoped_object(path, field_class_id);
     }
-    Ok(instructions)
+    Ok(())
 }
 
 fn lookup_field_on_class(field_name: &str, compilation_context: &mut CompilationContext) -> CompileResult<(String, String, String)> {

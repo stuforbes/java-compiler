@@ -7,9 +7,8 @@ pub fn from_call_expression(
     method_name: &str,
     arguments: &Vec<Expression>,
     compilation_context: &mut CompilationContext,
-) -> CompileResult<Vec<Instruction>> {
-
-    let mut instructions: Vec<Instruction> = vec![];
+    instructions: &mut Vec<Instruction>
+) -> CompileResult<()> {
 
     let (class_path, class_id) = if compilation_context.scoped_object.is_some() {
         (compilation_context.scoped_class_path().unwrap(), compilation_context.scoped_class_id().unwrap())
@@ -27,17 +26,14 @@ pub fn from_call_expression(
 
     compilation_context.clear_scoped_object();
     for argument in arguments {
-        let argument_instructions = from_expression(argument, compilation_context)?;
-        for argument_instruction in argument_instructions {
-            instructions.push(argument_instruction);
-        }
+        from_expression(argument, compilation_context, instructions)?;
     }
     compilation_context.push_scoped_object(class_path, class_id);
 
     instructions.push(Instruction::Invokevirtual(method_ref));
     instructions.push(Instruction::Return);
 
-    Ok(instructions)
+    Ok(())
 }
 
 fn lookup_method_descriptor(class_path: &str, method_name: &str, compilation_context: &mut CompilationContext) -> Result<String, CompileError> {

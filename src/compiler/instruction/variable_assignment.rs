@@ -1,18 +1,24 @@
-use ristretto_classfile::attributes::Instruction;
 use crate::ast::expression::Expression;
-use crate::compiler::{CompilationContext, CompileResult};
 use crate::compiler::instruction::expression::from_expression;
+use crate::compiler::{CompilationContext, CompileResult};
+use ristretto_classfile::attributes::Instruction;
 
-pub fn from_variable_assignment(name: &str, _var_type: Option<&str>, _is_final: bool, value: &Option<Expression>, compilation_context: &mut CompilationContext) -> CompileResult<Vec<Instruction>> {
-
+pub fn from_variable_assignment(
+    name: &str,
+    _var_type: Option<&str>,
+    _is_final: bool,
+    value: &Option<Expression>,
+    compilation_context: &mut CompilationContext,
+    instructions: &mut Vec<Instruction>,
+) -> CompileResult<()> {
     if value.is_none() {
         panic!("Unable to handle uninitialised variables");
     }
 
-    let mut result= from_expression(&value.as_ref().unwrap(), compilation_context)?;
+    from_expression(&value.as_ref().unwrap(), compilation_context, instructions)?;
 
     let id = compilation_context.stack.push(name);
-    result.push(Instruction::Astore(id));
+    instructions.push(Instruction::Astore(id));
 
-    Ok(result)
+    Ok(())
 }

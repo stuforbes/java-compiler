@@ -22,7 +22,8 @@ pub fn from(
     let main_method_code = wrap(compilation_context.constant_pool.add_utf8("Code"))?;
 
     compilation_context.stack.new_layer();
-    let instructions: Vec<Instruction> = build_instructions(ast_method, compilation_context)?;
+    let mut instructions: Vec<Instruction> = vec![];
+    build_instructions(ast_method, compilation_context, &mut instructions)?;
 
     // TODO: This will break when methods have inner stack layers
     let num_fields_in_stack = compilation_context.stack.count();
@@ -47,21 +48,16 @@ pub fn from(
     })
 }
 
-fn build_instructions(method: &AstMethod, compilation_context: &mut CompilationContext) -> CompileResult<Vec<Instruction>> {
-    let mut instructions: Vec<Instruction> = vec![];
-
+fn build_instructions(method: &AstMethod, compilation_context: &mut CompilationContext, instructions: &mut Vec<Instruction>) -> CompileResult<()> {
     for statement in method.statements() {
-        let statement_instructions = instruction::from(statement, compilation_context)?;
-        for statement_instruction in statement_instructions {
-            instructions.push(statement_instruction);
-        }
+        instruction::from(statement, compilation_context, instructions)?;
 
         compilation_context.clear_scoped_object();
     }
 
     println!("{:?}", instructions);
 
-    Ok(instructions)
+    Ok(())
 }
 
 fn append_scope_flag_from(

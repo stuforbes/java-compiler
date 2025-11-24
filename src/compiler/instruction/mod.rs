@@ -11,10 +11,10 @@ use crate::compiler::{CompilationContext, CompileResult};
 use crate::compiler::instruction::expression::from_expression;
 use crate::compiler::instruction::variable_assignment::from_variable_assignment;
 
-pub fn from(statement: &Statement, compilation_context: &mut CompilationContext) -> CompileResult<Vec<Instruction>> {
+pub fn from(statement: &Statement, compilation_context: &mut CompilationContext, instructions: &mut Vec<Instruction>) -> CompileResult<()> {
     match statement {
-        Statement::Expression { expression } => from_expression(expression, compilation_context),
+        Statement::Expression { expression } => from_expression(expression, compilation_context, instructions),
         Statement::VariableAssignment { name, var_type, is_final, value } =>
-            from_variable_assignment(name, *var_type, *is_final, value, compilation_context)
+            from_variable_assignment(name, *var_type, *is_final, value, compilation_context, instructions)
     }
 }
