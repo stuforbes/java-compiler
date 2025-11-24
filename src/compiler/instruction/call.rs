@@ -1,6 +1,6 @@
 use crate::ast::expression::Expression;
 use crate::compiler::instruction::expression::from_expression;
-use crate::compiler::{wrap, CompilationContext, CompileError, CompileResult};
+use crate::compiler::{wrap, CompilationContext, CompileError, EmptyCompileResult};
 use ristretto_classfile::attributes::Instruction;
 
 pub fn from_call_expression(
@@ -8,7 +8,7 @@ pub fn from_call_expression(
     arguments: &Vec<Expression>,
     compilation_context: &mut CompilationContext,
     instructions: &mut Vec<Instruction>
-) -> CompileResult<()> {
+) -> EmptyCompileResult {
 
     let (class_path, class_id) = if compilation_context.scoped_object.is_some() {
         (compilation_context.scoped_class_path().unwrap(), compilation_context.scoped_class_id().unwrap())

@@ -2,7 +2,7 @@ use crate::ast::class::{AstMethod, AstScope};
 use ristretto_classfile::{Method, MethodAccessFlags};
 use ristretto_classfile::attributes::Attribute::Code;
 use ristretto_classfile::attributes::Instruction;
-use crate::compiler::{instruction, CompilationContext};
+use crate::compiler::{instruction, CompilationContext, EmptyCompileResult};
 use crate::compiler::resolved_class::ResolvedClass;
 use crate::compiler::result::{wrap, CompileResult};
 
@@ -48,7 +48,7 @@ pub fn from(
     })
 }
 
-fn build_instructions(method: &AstMethod, compilation_context: &mut CompilationContext, instructions: &mut Vec<Instruction>) -> CompileResult<()> {
+fn build_instructions(method: &AstMethod, compilation_context: &mut CompilationContext, instructions: &mut Vec<Instruction>) -> EmptyCompileResult {
     for statement in method.statements() {
         instruction::from(statement, compilation_context, instructions)?;
 

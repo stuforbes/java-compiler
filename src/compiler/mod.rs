@@ -7,7 +7,7 @@ mod state_stack;
 
 use crate::ast::class::AstClass;
 use crate::compiler::class_file_builder::from;
-pub use crate::compiler::result::{wrap, CompileError, CompileResult};
+pub use crate::compiler::result::{wrap, CompileError, CompileResult, EmptyCompileResult};
 use ristretto_classfile::{ClassFile, ConstantPool};
 use crate::compiler::state_stack::StateStack;
 use crate::java::{new_class_loader, ClassLoader};

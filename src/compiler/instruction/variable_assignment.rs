@@ -1,6 +1,6 @@
 use crate::ast::expression::Expression;
 use crate::compiler::instruction::expression::from_expression;
-use crate::compiler::{CompilationContext, CompileResult};
+use crate::compiler::{CompilationContext, EmptyCompileResult};
 use ristretto_classfile::attributes::Instruction;
 
 pub fn from_variable_assignment(
@@ -10,7 +10,7 @@ pub fn from_variable_assignment(
     value: &Option<Expression>,
     compilation_context: &mut CompilationContext,
     instructions: &mut Vec<Instruction>,
-) -> CompileResult<()> {
+) -> EmptyCompileResult {
     if value.is_none() {
         panic!("Unable to handle uninitialised variables");
     }

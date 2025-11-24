@@ -1,8 +1,8 @@
-use crate::compiler::{wrap, CompilationContext, CompileError, CompileResult};
+use crate::compiler::{wrap, CompilationContext, CompileError, CompileResult, EmptyCompileResult};
 use crate::java::class::JavaClass;
 use ristretto_classfile::attributes::Instruction;
 
-pub fn from_static_identifier(name: &str, compilation_context: &mut CompilationContext, instructions: &mut Vec<Instruction>) -> CompileResult<()> {
+pub fn from_static_identifier(name: &str, compilation_context: &mut CompilationContext, instructions: &mut Vec<Instruction>) -> EmptyCompileResult {
     if compilation_context.scoped_object.is_none() {
         if compilation_context.stack.contains(name) {
             instructions.push(Instruction::Aload(compilation_context.stack.get(name)))

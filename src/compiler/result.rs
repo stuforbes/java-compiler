@@ -1,6 +1,7 @@
 use std::io::Error;
 
 pub type CompileResult<T> = Result<T, CompileError>;
+pub type EmptyCompileResult = CompileResult<()>;
 
 #[derive(Debug)]
 pub enum CompileError {
