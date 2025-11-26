@@ -1,6 +1,7 @@
 use crate::compiler::{wrap, CompilationContext, CompileResult, EmptyCompileResult};
 use ristretto_classfile::attributes::Instruction;
 use crate::compiler::resolver::ResolvedEntity::{StaticClass, StaticFieldReference, VariableOnStack};
+use crate::compiler::result::EMPTY_OK;
 
 pub fn from_static_identifier(name: &str, compilation_context: &mut CompilationContext, instructions: &mut Vec<Instruction>) -> EmptyCompileResult {
     let resolved = compilation_context.resolve(name)?;
@@ -22,7 +23,7 @@ pub fn from_static_identifier(name: &str, compilation_context: &mut CompilationC
             compilation_context.push_scoped_object(path, field_class_id);
         }
     }
-    Ok(())
+    EMPTY_OK
 }
 
 fn add_field_ref(field_name: &str, field_class_descriptor: &str, class_ref: u16, compilation_context: &mut CompilationContext) -> CompileResult<u16> {

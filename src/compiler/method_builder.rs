@@ -4,7 +4,7 @@ use ristretto_classfile::attributes::Attribute::Code;
 use ristretto_classfile::attributes::Instruction;
 use crate::compiler::{instruction, CompilationContext, EmptyCompileResult};
 use crate::compiler::resolved_class::ResolvedClass;
-use crate::compiler::result::{wrap, CompileResult};
+use crate::compiler::result::{wrap, CompileResult, EMPTY_OK};
 
 pub fn from(
     ast_method: &AstMethod,
@@ -57,7 +57,7 @@ fn build_instructions(method: &AstMethod, compilation_context: &mut CompilationC
 
     println!("{:?}", instructions);
 
-    Ok(())
+    EMPTY_OK
 }
 
 fn append_scope_flag_from(

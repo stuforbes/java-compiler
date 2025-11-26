@@ -3,6 +3,8 @@ use std::io::Error;
 pub type CompileResult<T> = Result<T, CompileError>;
 pub type EmptyCompileResult = CompileResult<()>;
 
+pub const EMPTY_OK: EmptyCompileResult = Ok(());
+
 #[derive(Debug)]
 pub enum CompileError {
     Ristretto(ristretto_classfile::Error),

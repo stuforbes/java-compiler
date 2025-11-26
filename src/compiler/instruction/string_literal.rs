@@ -1,5 +1,6 @@
 use ristretto_classfile::attributes::Instruction;
 use crate::compiler::{wrap, CompilationContext, EmptyCompileResult};
+use crate::compiler::result::EMPTY_OK;
 
 pub fn from_string_literal(
     value: &str,
@@ -9,5 +10,5 @@ pub fn from_string_literal(
     let index = wrap(compilation_context.constant_pool.add_string(value))?;
 
     instructions.push(Instruction::Ldc_w(index));
-    Ok(())
+    EMPTY_OK
 }

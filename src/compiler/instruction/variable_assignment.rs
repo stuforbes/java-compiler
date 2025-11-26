@@ -2,6 +2,7 @@ use crate::ast::expression::Expression;
 use crate::compiler::instruction::expression::from_expression;
 use crate::compiler::{CompilationContext, EmptyCompileResult};
 use ristretto_classfile::attributes::Instruction;
+use crate::compiler::result::EMPTY_OK;
 
 pub fn from_variable_assignment(
     name: &str,
@@ -20,5 +21,5 @@ pub fn from_variable_assignment(
     let id = compilation_context.stack.push(name);
     instructions.push(Instruction::Astore(id));
 
-    Ok(())
+    EMPTY_OK
 }

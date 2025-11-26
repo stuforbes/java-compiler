@@ -2,6 +2,7 @@ use crate::ast::expression::Expression;
 use crate::compiler::instruction::expression::from_expression;
 use crate::compiler::{CompilationContext, EmptyCompileResult};
 use ristretto_classfile::attributes::Instruction;
+use crate::compiler::result::EMPTY_OK;
 
 pub fn from_object_expression(
     parent: &Expression,
@@ -13,5 +14,5 @@ pub fn from_object_expression(
 
     from_expression(child, compilation_context, instructions)?;
 
-    Ok(())
+    EMPTY_OK
 }

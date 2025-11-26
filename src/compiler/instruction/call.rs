@@ -2,6 +2,7 @@ use crate::ast::expression::Expression;
 use crate::compiler::instruction::expression::from_expression;
 use crate::compiler::{wrap, CompilationContext, CompileError, EmptyCompileResult};
 use ristretto_classfile::attributes::Instruction;
+use crate::compiler::result::EMPTY_OK;
 
 pub fn from_call_expression(
     method_name: &str,
@@ -33,7 +34,7 @@ pub fn from_call_expression(
     instructions.push(Instruction::Invokevirtual(method_ref));
     instructions.push(Instruction::Return);
 
-    Ok(())
+    EMPTY_OK
 }
 
 fn lookup_method_descriptor(class_path: &str, method_name: &str, compilation_context: &mut CompilationContext) -> Result<String, CompileError> {
