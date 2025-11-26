@@ -10,6 +10,7 @@ pub enum CompileError {
     UnknownClass(String),
     UnknownMethod { class: String, method: String },
     UnknownField { class: String, field: String },
+    ResolutionFailure
 }
 
 pub fn wrap<T>(result: ristretto_classfile::Result<T>) -> CompileResult<T> {

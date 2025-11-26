@@ -4,15 +4,18 @@ mod method_builder;
 mod resolved_class;
 mod result;
 mod state_stack;
+mod resolver;
 
 use crate::ast::class::AstClass;
 use crate::compiler::class_file_builder::from;
 pub use crate::compiler::result::{wrap, CompileError, CompileResult, EmptyCompileResult};
 use ristretto_classfile::{ClassFile, ConstantPool};
+use crate::compiler::resolver::{ResolvedEntity, Resolver};
 use crate::compiler::state_stack::StateStack;
 use crate::java::{new_class_loader, ClassLoader};
 
 pub struct CompilationContext {
+    resolver: Resolver,
     constant_pool: ConstantPool,
     class_loader: ClassLoader,
     scoped_object: Option<ObjectReference>,
@@ -39,6 +42,14 @@ impl CompilationContext {
             .as_ref()
             .map(|o| o.class_id)
     }
+
+    pub fn resolve(&mut self, name: &str) -> CompileResult<ResolvedEntity> {
+        if let Some(scoped_object) = &self.scoped_object {
+            self.resolver.resolve_scoped(name, scoped_object.class_id, scoped_object.class_path.as_str(), &mut self.class_loader)
+        } else {
+            self.resolver.resolve_unscoped(name, &self.stack, &mut self.class_loader)
+        }
+    }
 }
 
 pub fn compile(class: &AstClass) -> CompileResult<ClassFile> {
@@ -46,6 +57,7 @@ pub fn compile(class: &AstClass) -> CompileResult<ClassFile> {
     let packages = new_class_loader();
     let mut compilation_context = CompilationContext {
         constant_pool,
+        resolver: Resolver {},
         class_loader: packages,
         scoped_object: None,
         stack: StateStack::new()
