@@ -54,6 +54,9 @@ fn build_instructions(method: &AstMethod, compilation_context: &mut CompilationC
 
         compilation_context.clear_scoped_object();
     }
+    if method.return_type() == "void" {
+        instructions.push(Instruction::Return);
+    }
 
     println!("{:?}", instructions);
 

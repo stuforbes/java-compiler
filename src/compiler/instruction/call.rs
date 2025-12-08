@@ -10,13 +10,16 @@ pub fn from_call_expression(
     compilation_context: &mut CompilationContext,
     instructions: &mut Vec<Instruction>
 ) -> EmptyCompileResult {
-
-    let (class_path, class_id) = if compilation_context.scoped_object.is_some() {
-        (compilation_context.scoped_class_path().unwrap(), compilation_context.scoped_class_id().unwrap())
+    if compilation_context.scoped_object.is_some() {
+        from_call_expression_on_scoped_object(method_name, arguments, compilation_context, instructions)?
     } else {
-        panic!("Cannot do local method refs yet");
-    };
+        from_call_expression_on_current_class(method_name, arguments, compilation_context, instructions)?
+    }
+}
 
+fn from_call_expression_on_scoped_object(method_name: &str, arguments: &Vec<Expression>, compilation_context: &mut CompilationContext, instructions: &mut Vec<Instruction>) -> Result<EmptyCompileResult, CompileError> {
+    let class_path = compilation_context.scoped_class_path().unwrap();
+    let class_id = compilation_context.scoped_class_id().unwrap();
 
     let method_descriptor = lookup_method_descriptor(class_path.as_str(), method_name, compilation_context)?;
     let method_ref = wrap(
@@ -32,12 +35,38 @@ pub fn from_call_expression(
     compilation_context.push_scoped_object(class_path, class_id);
 
     instructions.push(Instruction::Invokevirtual(method_ref));
-    instructions.push(Instruction::Return);
 
-    EMPTY_OK
+    Ok(EMPTY_OK)
 }
 
+fn from_call_expression_on_current_class(method_name: &str, arguments: &Vec<Expression>, compilation_context: &mut CompilationContext, instructions: &mut Vec<Instruction>) -> Result<EmptyCompileResult, CompileError> {
+    let class_path = compilation_context.this_class_path();
+    let class_id = compilation_context.this_class_id();
+
+    if !compilation_context.symbol_table.contains_method(&method_name.to_string()) {
+        return Err(CompileError::UnknownMethod { class: class_path, method: method_name.to_string() })
+    }
+
+    let method = compilation_context.symbol_table.method_named(&method_name.to_string());
+
+    let method_ref = wrap(
+        compilation_context
+            .constant_pool
+            .add_method_ref(class_id, method_name, method.descriptor().as_str()),
+    )?;
+
+    for argument in arguments {
+        from_expression(argument, compilation_context, instructions)?;
+    }
+
+    instructions.push(Instruction::Invokestatic(method_ref));
+
+    Ok(EMPTY_OK)
+}
+
+
 fn lookup_method_descriptor(class_path: &str, method_name: &str, compilation_context: &mut CompilationContext) -> Result<String, CompileError> {
+
     let method = compilation_context
         .class_loader
         .load(class_path)

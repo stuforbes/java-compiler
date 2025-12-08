@@ -9,6 +9,7 @@ use crate::scanner::TokenType;
 enum StatementBuilder {
     Assignment,
     Expression,
+    Return,
 }
 
 impl StatementBuilder {
@@ -55,6 +56,13 @@ impl StatementBuilder {
                 }
                 statement
             },
+            StatementBuilder::Return => {
+                consume_next_token_if_type(TokenType::Return, parser)?;
+
+                let statement = Statement::new_return_statement(find_next_expression(parser));
+                consume_next_token_if_type(TokenType::SemiColon, parser);
+                Some(statement)
+            }
         }
     }
 }

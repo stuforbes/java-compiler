@@ -4,7 +4,14 @@ use crate::java::field::JavaField;
 use crate::java::package::Package;
 
 pub fn build() -> Package {
-    let system = JavaClass::new(
+    let mut package = Package::new("java/lang");
+    package.add_class(load_system());
+    package.add_class(load_string());
+    package
+}
+
+fn load_system() -> JavaClass {
+    JavaClass::new(
         "System",
         "java.lang.System",
         "Ljava/lang/System;",
@@ -13,9 +20,16 @@ pub fn build() -> Package {
             JavaField::new("out", "java.io.PrintStream"),
             JavaField::new("err", "java.io.PrintStream"),
         ]),
-    );
-
-    let mut package = Package::new("java/lang");
-    package.add_class(system);
-    package
+    )
 }
+
+fn load_string() -> JavaClass {
+    JavaClass::new(
+        "String",
+        "java.lang.String",
+        "Ljava/lang/String;",
+        as_map(vec![]),
+        as_map(vec![]),
+    )
+}
+

@@ -7,7 +7,9 @@ lazy_static! {
     static ref IDENTIFIER_KEYWORDS: HashMap<&'static str, TokenType> = vec![
         ("class", TokenType::Class),
         ("public", TokenType::Public),
+        ("private", TokenType::Private),
         ("static", TokenType::Static),
+        ("return", TokenType::Return),
     ].into_iter().collect();
 
     static ref SINGLE_CHAR_TOKENS: HashMap<char, TokenType> = vec![

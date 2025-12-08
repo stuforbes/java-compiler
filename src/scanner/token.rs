@@ -5,7 +5,9 @@ pub enum TokenType {
     // Reserved keywords
     Class,
     Public,
+    Private,
     Static,
+    Return,
 
     // Single character tokens
     LeftParen,

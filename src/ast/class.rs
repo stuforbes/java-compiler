@@ -58,6 +58,7 @@ pub struct AstMethod<'a> {
     is_final: bool,
     is_static: bool,
     return_type: &'a str,
+    return_type_is_array: bool,
     parameters: Vec<AstParameter<'a>>,
     statements: Vec<Statement<'a>>,
 }
@@ -69,6 +70,7 @@ impl<'a> AstMethod<'a> {
         is_final: bool,
         is_static: bool,
         return_type: &'a str,
+        return_type_is_array: bool,
         parameters: Vec<AstParameter<'a>>,
         statements: Vec<Statement<'a>>,
     ) -> Self {
@@ -78,6 +80,7 @@ impl<'a> AstMethod<'a> {
             is_final,
             is_static,
             return_type,
+            return_type_is_array,
             parameters,
             statements,
         }
@@ -101,6 +104,9 @@ impl<'a> AstMethod<'a> {
 
     pub fn return_type(&self) -> &'a str {
         self.return_type
+    }
+    pub fn return_type_is_array(&self) -> bool {
+        self.return_type_is_array
     }
     pub fn parameters(&self) -> &Vec<AstParameter<'a>> {
         &self.parameters

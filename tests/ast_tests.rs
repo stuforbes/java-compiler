@@ -18,6 +18,7 @@ fn should_build_simple_ast() {
                 false,
                 true,
                 "void",
+                false,
                 vec![AstParameter::new("args", "String", false)],
                 vec![Statement::new_expression_statement(Expression::new_object_expression(
                     Expression::new_static_identifier("System"),
@@ -46,6 +47,7 @@ fn should_build_method_with_string_variable_assignment() {
             false,
             true,
             "void",
+            false,
             vec![AstParameter::new("args", "String", false)],
             vec![
                 Statement::new_var_assignment(

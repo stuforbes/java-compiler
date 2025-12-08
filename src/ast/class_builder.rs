@@ -82,6 +82,7 @@ pub struct MethodBuilder<'a> {
     is_static: bool,
     is_final: bool,
     return_type: Option<&'a str>,
+    return_type_is_array: bool,
     parameters: Vec<ParameterBuilder<'a>>,
     statements: Vec<Statement<'a>>,
 }
@@ -94,6 +95,7 @@ impl<'a> MethodBuilder<'a> {
             is_static: false,
             is_final: false,
             return_type: None,
+            return_type_is_array: false,
             parameters: vec![],
             statements: vec![],
         }
@@ -118,6 +120,10 @@ impl<'a> MethodBuilder<'a> {
 
     pub fn with_return_type(&mut self, return_type: &'a str) {
         self.return_type = Some(return_type)
+    }
+
+    pub fn return_type_is_array(&mut self, return_type_is_array: bool) {
+        self.return_type_is_array = return_type_is_array
     }
 
     pub fn with_new_parameter(&mut self) {
@@ -160,6 +166,7 @@ impl <'a> Build<AstMethod<'a>> for MethodBuilder<'a> {
             self.is_final,
             self.is_static,
             return_type,
+            self.return_type_is_array,
             ast_parameters,
             self.statements
         )

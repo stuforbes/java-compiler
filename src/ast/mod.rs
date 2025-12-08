@@ -47,6 +47,13 @@ pub fn to_ast<'a>(tokens: Vec<Token<'a>>) -> AstClass<'a> {
                     let method = class_builder.latest_method();
                     method.with_return_type(token.lexeme())
                 }
+                ClassState::MethodReturnArrayIndicatorStart => {
+                    // No op
+                }
+                ClassState::MethodReturnArrayIndicatorEnd => {
+                    let method = class_builder.latest_method();
+                    method.return_type_is_array(true);
+                }
                 ClassState::MethodName => {
                     let method = class_builder.latest_method();
                     method.with_name(token.lexeme())
@@ -93,6 +100,7 @@ pub fn to_ast<'a>(tokens: Vec<Token<'a>>) -> AstClass<'a> {
 fn scope_for(token_type: TokenType) -> AstScope {
     match token_type {
         TokenType::Public => AstScope::Public,
+        TokenType::Private => AstScope::Private,
         _ => panic!("Unknown scope {:?}", token_type),
     }
 }
